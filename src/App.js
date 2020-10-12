@@ -1,13 +1,15 @@
 import React from 'react';
 import './App.css';
-import AddPicture from './Components/Pictures/AddPicture'
 import { withFirebase } from './Components/Firebase';
+import CameraApp from "./Components/Pictures/Camera";
+import ShowPictures from "./Components/Pictures/ShowPictures";
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <AddPicture></AddPicture>
+        <ShowPictures/>
+        <CameraApp/>
       </header>
     </div>
   );
