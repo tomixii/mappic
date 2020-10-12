@@ -14,7 +14,11 @@ Then serve the app somehow. For example
 
 ### `serve -s build`
 
+The app is now served locally. Default [http://localhost:5000](http://localhost:5000)
+
 --------
+
+Development mode is useful for frontend development :) (You can't install pwa in development mode) 
 
 ### `npm start`
 
