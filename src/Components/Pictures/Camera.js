@@ -1,12 +1,17 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import Camera from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 import { withFirebase } from '../Firebase';
 
 function CameraApp ({firebase}) {
+    const [takenPicture, setTakenPicture] = useState('');
+
+    useEffect(() => {
+        setTakenPicture('');
+    }, []);
 
     const handleTakePhoto = (dataUri) => {
-        console.log("url", dataUri)
+        setTakenPicture(dataUri);
         firebase
             .pictures()
             .add({
@@ -26,9 +31,19 @@ function CameraApp ({firebase}) {
 
 
     return (
-        <Camera
-            onTakePhoto = { (dataUri) => { handleTakePhoto(dataUri); } }
-        />
+        <div>
+        {takenPicture === '' ?
+            <Camera
+                idealResolution = {{width: 640, height: 480}}
+                onTakePhoto={(dataUri) => {
+                    handleTakePhoto(dataUri);
+                }}
+            />
+            :
+            <img src={takenPicture}/>
+        }
+
+        </div>
     );
 }
 

@@ -26,10 +26,15 @@ function CameraApp ({firebase}) {
 
     return (
         <div>
-            <button onClick={() => setShowPictures(true)}>Show all the pictures</button>
+            {showPictures ?
+                <button onClick={() => setShowPictures(!showPictures)}>Close all the pictures</button>
+                :
+                <button onClick={() => setShowPictures(!showPictures)}>Show all the pictures</button>
+            }
+
             {showPictures &&
                 pictures.map((pic) => (
-                    <div>{pic.imageUrl}</div>
+                    <img src={pic.imageUrl} height='100px' width='100px' />
                 ))
             }
 
