@@ -6,6 +6,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
+    appBar: {
+        zIndex: theme.zIndex.drawer + 1,
+    },
     title: {
         flexGrow: 1,
         textAlign: 'start'
@@ -16,7 +19,7 @@ const Header = () => {
     const classes = useStyles();
 
     return (
-        <AppBar position='static'>
+        <AppBar className={classes.appBar} position='static'>
             <Toolbar>
                 <Typography variant='h6' className={classes.title}>
                     Mappic
