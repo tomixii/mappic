@@ -30,12 +30,13 @@ const MapContainer = (props) => {
 					console.log('marker added at: ', latLng.lat(), latLng.lng());
 				}}
 			>
-				{markers.map((marker) => (
+				{markers.map((marker, i) => (
 					<Marker
 						title={'joku paikka'}
 						name={'paikka'}
 						position={{ lat: marker.lat, lng: marker.lng }}
 						onClick={() => setShowInfoWindow(true)}
+						key={i}
 					>
 						<InfoWindow visible={true} style={{ width: 200, height: 200 }}>
 							<div style={{ width: 200, height: 200 }}>

@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import { Main } from './Components/main';
 import { Header } from './Components/header';
+import { withFirebase } from './Components/Firebase';
 
 function App() {
 	return (
@@ -12,4 +13,4 @@ function App() {
 	);
 }
 
-export default App;
+export default withFirebase(App);
