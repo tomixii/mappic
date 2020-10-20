@@ -1,15 +1,15 @@
 import React from 'react';
 import './App.css';
-import Map from './Map';
+import { Main } from './Components/main';
+import { Header } from './Components/header';
 
-const App = () => {
+function App() {
 	return (
 		<div className="App">
-			<header className="App-header">
-				<Map />
-			</header>
+			<Header />
+			<Main />
 		</div>
 	);
-};
+}
 
 export default App;

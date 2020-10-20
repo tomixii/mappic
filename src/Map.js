@@ -6,7 +6,6 @@ import MapMarker from './MapMarker';
 const MapContainer = (props) => {
 	const [markers, setMarkers] = React.useState([]);
 	const [showInfoWindow, setShowInfoWindow] = React.useState(false);
-	console.log(process.env.GOOGLE_MAPS_API_KEY);
 	return (
 		<Map
 			google={props.google}

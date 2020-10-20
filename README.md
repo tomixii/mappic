@@ -4,6 +4,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 PWA works only in production mode. In the project directory, you can run:
 
+### `npm install`
+
 ### `npm run build`
 
 Then serve the app somehow. For example
@@ -12,7 +14,11 @@ Then serve the app somehow. For example
 
 ### `serve -s build`
 
+The app is now served locally. Default [http://localhost:5000](http://localhost:5000)
+
 --------
+
+Development mode is useful for frontend development :) (You can't install pwa in development mode) 
 
 ### `npm start`
 
