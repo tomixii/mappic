@@ -5,9 +5,9 @@ import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { AddImageModal } from './add-image-modal';
+import { AddImageModal } from './addImageModal';
 import Map from './map';
-import { SidePanel } from './location-view';
+import { SidePanel } from './locationView';
 
 const drawerWidth = 400;
 
@@ -36,12 +36,13 @@ const useStyles = makeStyles((theme) => ({
 	},
 	buttonContainer: {
 		position: 'absolute',
+		left: '50%',
+		transform: 'translateX(-50%)',
 		bottom: theme.spacing(4),
 		display: 'flex',
 		flexDirection: 'column',
 		justifyContent: 'center',
 		alignItems: 'center',
-		width: '100%',
 	},
 	buttonContainerShift: {
 		width: `calc(100% - ${drawerWidth}px)`,
