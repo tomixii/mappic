@@ -6,8 +6,8 @@ import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { AddImageModal } from './addImageModal';
-import Map from './map';
-import { SidePanel } from './locationView';
+import Map from './Map/map';
+import SidePanel from './locationView';
 
 const drawerWidth = 400;
 
@@ -76,7 +76,6 @@ const Main = () => {
 	return (
 		<Container className={classes.container}>
 			<SidePanel
-				images={[]}
 				locationName="Example location"
 				locationInfo="Other location info"
 				drawerWidth={drawerWidth}
@@ -90,7 +89,7 @@ const Main = () => {
 					[classes.contentShift]: openSidePanel,
 				})}
 			>
-				<Map />
+				<Map openSidePanel={() => setOpenSidePanel(true)} />
 				<Box
 					className={clsx(classes.buttonContainer, {
 						[classes.buttonContainerShift]: openSidePanel,

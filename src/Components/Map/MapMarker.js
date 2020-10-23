@@ -1,10 +1,10 @@
 import React from 'react';
 
-const MapMarker = ({ data }) => {
+const MapMarker = ({ lat, lng }) => {
 	return (
 		<div
-			lat={data.lat}
-			lng={data.lng}
+			lat={lat}
+			lng={lng}
 			style={{
 				width: 20,
 				height: 20,
@@ -13,6 +13,9 @@ const MapMarker = ({ data }) => {
 				borderStyle: 'solid',
 				borderRadius: 20,
 				backgroundColor: 'lightblue',
+				position: 'absolute',
+				top: -13,
+				left: -13,
 			}}
 		/>
 	);
