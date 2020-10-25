@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 //import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
-import GoogleMapReact from 'google-map-react';
+import GoogleMapReact, { meters2ScreenPixels } from 'google-map-react';
 import { makeStyles } from '@material-ui/core/styles';
 import { withFirebase } from '../Firebase';
 
@@ -14,6 +14,7 @@ import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
+import { Grow } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
 	mapContainer: {
@@ -29,6 +30,7 @@ const MapContainer = (props) => {
 	const classes = useStyles();
 
 	//const [markers, setMarkers] = React.useState([]);
+	const [currentZoom, setCurrentZoom] = React.useState(14);
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
@@ -65,18 +67,19 @@ const MapContainer = (props) => {
 		<div className={classes.mapContainer}>
 			<GoogleMapReact
 				bootstrapURLKeys={{ key: process.env.GOOGLE_MAPS_API_KEY }}
-				defaultZoom={14}
+				defaultZoom={currentZoom}
 				defaultCenter={{ lat: 60.18, lng: 24.82 }}
 				yesIWantToUseGoogleMapApiInternals
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
-				onChange={(event) =>
+				onChange={(event) => {
+					setCurrentZoom(event.zoom);
 					fetchImagesInBounds({
 						north: event.bounds.ne.lat,
 						east: event.bounds.ne.lng,
 						south: event.bounds.sw.lat,
 						west: event.bounds.sw.lng,
-					})
-				}
+					});
+				}}
 				onClick={(coord) => {
 					const { lat, lng } = coord;
 					props.setLocation({ lat, lng });
@@ -89,7 +92,7 @@ const MapContainer = (props) => {
 									image.longitude,
 									lat,
 									lng
-								) < 1
+								) < 0.5
 						)
 					);
 					props.openSidePanel();
@@ -102,10 +105,18 @@ const MapContainer = (props) => {
 				{props.data.mapImages.map((marker, i) => (
 					<MapMarker lat={marker.latitude} lng={marker.longitude} key={i} />
 				))}
-				{props.data.location && (
+				{props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}
 						lng={props.data.location.lng}
+						pixels={meters2ScreenPixels(
+							1000,
+							{
+								lat: props.data.location.lat,
+								lng: props.data.location.lng,
+							},
+							currentZoom
+						)}
 					/>
 				)}
 			</GoogleMapReact>

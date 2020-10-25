@@ -1,20 +1,18 @@
 import React from 'react';
 
-const SearchArea = ({ lat, lng }) => {
+const SearchArea = (props) => {
 	return (
 		<div
-			lat={lat}
-			lng={lng}
 			style={{
 				position: 'absolute',
 				transform: 'translate(-50%, -50%)',
 				opacity: 0.3,
-				width: 200,
-				height: 200,
+				width: props.pixels.w,
+				height: props.pixels.h,
 				borderWidth: 3,
 				borderColor: 'red',
 				borderStyle: 'solid',
-				borderRadius: 100,
+				borderRadius: props.pixels.w * 3,
 				backgroundColor: 'lightblue',
 			}}
 		/>

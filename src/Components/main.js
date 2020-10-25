@@ -89,7 +89,10 @@ const Main = () => {
 					[classes.contentShift]: openSidePanel,
 				})}
 			>
-				<Map openSidePanel={() => setOpenSidePanel(true)} />
+				<Map
+					openSidePanel={() => setOpenSidePanel(true)}
+					showCircle={openSidePanel}
+				/>
 				<Box
 					className={clsx(classes.buttonContainer, {
 						[classes.buttonContainerShift]: openSidePanel,
