@@ -5,9 +5,10 @@ import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { AddImageModal } from './addImageModal';
+import AddImageModal from './addImageModal';
 import Map from './map';
 import { SidePanel } from './locationView';
+import { withFirebase } from "./Firebase";
 
 const drawerWidth = 400;
 
@@ -121,4 +122,4 @@ const Main = () => {
 	);
 };
 
-export { Main };
+export default withFirebase(Main);

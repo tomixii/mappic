@@ -38,6 +38,7 @@ function CameraApp ({firebase}) {
                 onTakePhoto={(dataUri) => {
                     handleTakePhoto(dataUri);
                 }}
+                onCameraError{...error => console.log(error)}
             />
             :
             <img src={takenPicture}/>
