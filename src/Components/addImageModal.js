@@ -10,11 +10,10 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme, makeStyles, withStyles } from '@material-ui/core/styles';
 import {useDropzone} from 'react-dropzone';
 import { withFirebase } from './Firebase';
-import { BrowserView, MobileView } from "react-device-detect";
+import { BrowserView, MobileView, isMobile } from "react-device-detect";
 
 import CloseIcon from '@material-ui/icons/Close';
 import VerticalAlignTopIcon from '@material-ui/icons/VerticalAlignTop';
-import CameraRollPictures from './cameraRoll'
 
 const useStyles = makeStyles((theme) => ({
 	footerButton: {
@@ -101,13 +100,16 @@ const AddImageModal = (props) => {
 
 	const handlePictures = () => {
 		files.forEach(file => {
-			props.firebase.storage.ref(`images/${file.path}`).put(file).then(() => {
+			const imageExtension = file.path.split('.')[file.path.split('.').length - 1];
+			//234124124.png
+			const imageFileName = `${Math.round(Math.random() * 100000000)}.${imageExtension}`;
+			props.firebase.storage.ref(`images/${imageFileName}`).put(file).then(() => {
 				props.firebase
 					.pictures()
 					.add({
 						latitude: 23,
 						longitude: 20,
-						imageUrl: 'https://firebasestorage.googleapis.com/v0/b/mappic.appspot.com/o/images%2F'+ file.path + '?alt=media' ,
+						imageUrl: 'https://firebasestorage.googleapis.com/v0/b/mappic.appspot.com/o/images%2F'+ imageFileName + '?alt=media' ,
 						createdAt: new Date().toISOString()
 
 					})
@@ -126,11 +128,11 @@ const AddImageModal = (props) => {
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 	const thumbs = files.map(file => (
 		<div style={{display: 'inline-flex'}} key={file.name}>
-			{console.log("file", file)}
 			<div style={{display: 'flex'}}>
 				<img
 					src={file.preview}
-					style={{height: '100px', width: '100px'}}
+					width={isMobile ? '80%' : 100}
+					height={isMobile ? '80%' : 100}
 				/>
 			</div>
 		</div>
@@ -172,7 +174,15 @@ const AddImageModal = (props) => {
 
 				</BrowserView>
 				<MobileView>
-					<CameraRollPictures />
+					<Button {...getRootProps({className: 'dropzone'})} variant="outlined">
+						Choose image
+					</Button>
+					<input {...getInputProps()} />
+					{ thumbs &&
+					<aside>
+						{thumbs}
+					</aside>
+					}
 				</MobileView>
 			</DialogContent>
 
