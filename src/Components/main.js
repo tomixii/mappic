@@ -1,13 +1,16 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import clsx from 'clsx';
 import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { AddImageModal } from './addImageModal';
+import AddImageModal from './addImageModal';
 import Map from './Map/map';
 import SidePanel from './locationView';
+import { withFirebase } from './Firebase';
+import { setLocation } from '../redux/actions/dataActions';
 
 const drawerWidth = 400;
 
@@ -52,12 +55,20 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const Main = () => {
+const Main = (props) => {
 	const classes = useStyles();
 	const [openModal, setOpenModal] = React.useState(false);
 	const [openSidePanel, setOpenSidePanel] = React.useState(false);
 
 	const handleClickOpenModal = () => {
+		navigator.geolocation.getCurrentPosition((position) => {
+			console.log(position);
+			props.setLocation({
+				lng: position.coords.longitude,
+				lat: position.coords.latitude,
+			});
+		});
+
 		setOpenModal(true);
 	};
 
@@ -81,6 +92,7 @@ const Main = () => {
 				drawerWidth={drawerWidth}
 				open={openSidePanel}
 				handleClose={handleCloseSidePanel}
+				openAddImageModal={() => setOpenModal(true)}
 			/>
 			<AddImageModal open={openModal} handleClose={handleCloseModal} />
 
@@ -123,4 +135,8 @@ const Main = () => {
 	);
 };
 
-export { Main };
+const mapActionsToProps = {
+	setLocation,
+};
+
+export default connect(null, mapActionsToProps)(withFirebase(Main));

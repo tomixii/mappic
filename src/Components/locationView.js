@@ -129,6 +129,7 @@ const SidePanel = (props) => {
 					variant="contained"
 					disableElevation
 					color="primary"
+					onClick={props.openAddImageModal}
 				>
 					Add image
 				</Button>

@@ -45,28 +45,27 @@ const MapContainer = (props) => {
 		const images = [];
 		props.firebase
 			.pictures()
-			.where('latitude', '<', bounds.north)
-			.where('latitude', '>', bounds.south)
+			.where('lat', '<', bounds.north)
+			.where('lat', '>', bounds.south)
 			.get()
 			.then((data) => {
 				data.forEach((doc) => {
-					if (
-						doc.data().longitude > bounds.west &&
-						doc.data().longitude < bounds.east
-					) {
+					if (doc.data().lng > bounds.west && doc.data().lng < bounds.east) {
 						images.push(doc.data());
 					}
 				});
 			})
 			.then(() => {
+				console.log(images);
 				props.setMapImages(images);
+				console.log(`Saved ${images.length} image(s) to redux`);
 			});
 	};
 
 	return (
 		<div className={classes.mapContainer}>
 			<GoogleMapReact
-				bootstrapURLKeys={{ key: process.env.GOOGLE_MAPS_API_KEY }}
+				bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_API_KEY }}
 				defaultZoom={currentZoom}
 				defaultCenter={{ lat: 60.18, lng: 24.82 }}
 				yesIWantToUseGoogleMapApiInternals
@@ -87,12 +86,7 @@ const MapContainer = (props) => {
 					props.setAreaImages(
 						props.data.mapImages.filter(
 							(image) =>
-								getDistanceFromLatLonInKm(
-									image.latitude,
-									image.longitude,
-									lat,
-									lng
-								) < 0.5
+								getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
 						)
 					);
 					props.openSidePanel();
@@ -103,7 +97,7 @@ const MapContainer = (props) => {
 				}}
 			>
 				{props.data.mapImages.map((marker, i) => (
-					<MapMarker lat={marker.latitude} lng={marker.longitude} key={i} />
+					<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
 				))}
 				{props.data.location && props.showCircle && (
 					<SearchArea
