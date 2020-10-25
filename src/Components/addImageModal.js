@@ -1,5 +1,5 @@
-import React from 'react';
-import Box from '@material-ui/core/Box';
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import IconButton from '@material-ui/core/IconButton';
@@ -9,12 +9,12 @@ import MuiDialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme, makeStyles, withStyles } from '@material-ui/core/styles';
+import { useDropzone } from 'react-dropzone';
+import { withFirebase } from './Firebase';
+import { BrowserView, MobileView, isMobile } from 'react-device-detect';
 
 import CloseIcon from '@material-ui/icons/Close';
 import VerticalAlignTopIcon from '@material-ui/icons/VerticalAlignTop';
-
-import Camera from './Pictures/Camera';
-import ShowPictures from './Pictures/ShowPictures';
 
 const useStyles = makeStyles((theme) => ({
 	footerButton: {
@@ -87,53 +87,141 @@ const DialogActions = withStyles((theme) => ({
 const AddImageModal = (props) => {
 	const classes = useStyles();
 	const theme = useTheme();
-	const [showTakePhoto, setShowTakePhoto] = React.useState(false);
+	const [files, setFiles] = React.useState([]);
+
+	const { getRootProps, getInputProps } = useDropzone({
+		accept: 'image/*',
+		onDrop: (acceptedFiles) => {
+			setFiles(
+				acceptedFiles.map((file) =>
+					Object.assign(file, {
+						preview: URL.createObjectURL(file),
+					})
+				)
+			);
+		},
+	});
+
+	const handlePictures = () => {
+		files.forEach((file) => {
+			const imageExtension = file.path.split('.')[
+				file.path.split('.').length - 1
+			];
+			//234124124.png
+			const imageFileName = `${Math.round(
+				Math.random() * 100000000
+			)}.${imageExtension}`;
+			props.firebase.storage
+				.ref(`images/${imageFileName}`)
+				.put(file)
+				.then(() => {
+					props.firebase
+						.pictures()
+						.add({
+							lat: props.data.location.lat,
+							lng: props.data.location.lng,
+							imageUrl:
+								'https://firebasestorage.googleapis.com/v0/b/mappic.appspot.com/o/images%2F' +
+								imageFileName +
+								'?alt=media',
+							createdAt: new Date().toISOString(),
+						})
+						.then(function (docRef) {
+							console.log('Document written with ID: ', docRef.id);
+						})
+						.catch(function (error) {
+							console.error('Error adding document: ', error);
+						});
+				});
+		});
+	};
 
 	// Use full screen dialog for smaller screens
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+	const thumbs = files.map((file) => (
+		<div style={{ display: 'inline-flex' }} key={file.name}>
+			<div style={{ display: 'flex' }}>
+				<img
+					src={file.preview}
+					width={isMobile ? '80%' : 100}
+					height={isMobile ? '80%' : 100}
+				/>
+			</div>
+		</div>
+	));
+
+	useEffect(() => {
+		// Make sure to revoke the data uris to avoid memory leaks
+		files.forEach((file) => URL.revokeObjectURL(file.preview));
+	}, [files]);
 
 	return (
 		<Dialog fullScreen={fullScreen} open={props.open}>
-			{showTakePhoto ? (
-				<div>
-					<Camera />
-					<ShowPictures />
-				</div>
-			) : (
-				<div>
-					<DialogTitle onClose={props.handleClose}>Add image</DialogTitle>
-					<DialogContent dividers>
-						{/* TODO: implementation for mobile and desktop */}
-						<Button variant="outlined" onClick={() => setShowTakePhoto(true)}>
-							Choose image
-						</Button>
-						<Box className={classes.box}>
-							<VerticalAlignTopIcon className={classes.uploadIcon} />
-							<Typography className={classes.uploadText}>
-								Choose an image or drag and drop it here
-							</Typography>
-						</Box>
-					</DialogContent>
-					<DialogActions>
-						<Button
-							variant="contained"
-							disableElevation
-							color="primary"
-							className={classes.footerButton}
-							onClick={() => {
-								/* TODO */
-							}}
-						>
-							Add
-						</Button>
-						<Button variant="outlined" onClick={() => props.handleClose()}>
-							Cancel
-						</Button>
-					</DialogActions>
-				</div>
-			)}
+			<DialogTitle onClose={props.handleClose}>Add image</DialogTitle>
+			<DialogContent dividers>
+				<BrowserView>
+					<Button
+						{...getRootProps({ className: 'dropzone' })}
+						variant="outlined"
+					>
+						Choose image
+					</Button>
+
+					<div
+						{...getRootProps({ className: 'dropzone' })}
+						className={classes.box}
+					>
+						<input {...getInputProps()} />
+						<VerticalAlignTopIcon className={classes.uploadIcon} />
+						<Typography className={classes.uploadText}>
+							Choose an image or drag and drop it here
+						</Typography>
+					</div>
+					{thumbs && <aside>{thumbs}</aside>}
+				</BrowserView>
+				<MobileView>
+					<Button
+						{...getRootProps({ className: 'dropzone' })}
+						variant="outlined"
+					>
+						Choose image
+					</Button>
+					<input {...getInputProps()} />
+					{thumbs && <aside>{thumbs}</aside>}
+				</MobileView>
+			</DialogContent>
+
+			<DialogActions>
+				<Button
+					variant="contained"
+					disableElevation
+					color="primary"
+					className={classes.footerButton}
+					onClick={() => {
+						handlePictures();
+						setFiles([]);
+						/* TODO: Tell to users that "pictures(s) added successfully" */
+						props.handleClose();
+					}}
+				>
+					Add
+				</Button>
+				<Button
+					variant="outlined"
+					onClick={() => {
+						setFiles([]);
+						props.handleClose();
+					}}
+				>
+					Cancel
+				</Button>
+			</DialogActions>
 		</Dialog>
 	);
 };
 
-export { AddImageModal };
+const mapStateToProps = (state) => ({
+	data: state.data,
+});
+
+export default connect(mapStateToProps, null)(withFirebase(AddImageModal));

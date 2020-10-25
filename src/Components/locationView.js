@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import clsx from 'clsx';
 
 import Avatar from '@material-ui/core/Avatar';
@@ -13,6 +14,8 @@ import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import { makeStyles } from '@material-ui/core/styles';
 import PanoramaIcon from '@material-ui/icons/Panorama';
+
+import { setLocation } from '../redux/actions/dataActions';
 
 const drawerWidth = 400; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
@@ -86,31 +89,10 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const mockImageData = [
-	{
-		key: '1',
-	},
-	{
-		key: '2',
-	},
-	{
-		key: '3',
-	},
-	{
-		key: '4',
-	},
-	{
-		key: '5',
-	},
-	{
-		key: '6',
-	},
-];
-
 const SidePanel = (props) => {
 	const classes = useStyles();
-	const images = props.images ? props.images : [];
 	//const theme = useTheme();
+
 	return (
 		<Drawer
 			className={classes.drawer}
@@ -122,8 +104,8 @@ const SidePanel = (props) => {
 			}}
 		>
 			<Box className={classes.drawerHeader}>
-				{images.length > 0 ? (
-					<div>TODO insert image</div>
+				{props.data.areaImages.length > 0 ? (
+					<img src={props.data.areaImages[0].imageUrl} alt="thumbnail" />
 				) : (
 					<PanoramaIcon className={classes.placeholderImage} />
 				)}
@@ -147,6 +129,7 @@ const SidePanel = (props) => {
 					variant="contained"
 					disableElevation
 					color="primary"
+					onClick={props.openAddImageModal}
 				>
 					Add image
 				</Button>
@@ -164,16 +147,13 @@ const SidePanel = (props) => {
 				<Typography className={classes.sectionTitle}>Images</Typography>
 				<Box className={classes.gridContainer}>
 					<GridList cellHeight={120} className={classes.gridList} cols={3}>
-						{
-							/* TODO use mock data for now */
-							mockImageData.map((image) => (
-								<GridListTile key={image.key}>
-									<Avatar className={classes.avatar} variant="square">
-										<PanoramaIcon className={classes.avatarIcon} />
-									</Avatar>
-								</GridListTile>
-							))
-						}
+						{props.data.areaImages.map((image, i) => (
+							<GridListTile key={i}>
+								<Avatar className={classes.avatar} variant="square">
+									<img src={image.imageUrl} alt="thumbnail" />
+								</Avatar>
+							</GridListTile>
+						))}
 					</GridList>
 				</Box>
 				<Button className={classes.viewMoreButton} color="primary">
@@ -184,4 +164,12 @@ const SidePanel = (props) => {
 	);
 };
 
-export { SidePanel };
+const mapStateToProps = (state) => ({
+	data: state.data,
+});
+
+const mapActionsToProps = {
+	setLocation,
+};
+
+export default connect(mapStateToProps, mapActionsToProps)(SidePanel);
