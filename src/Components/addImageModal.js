@@ -161,7 +161,7 @@ const AddImageModal = (props) => {
 	// Use full screen dialog for smaller screens
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const screenLarge = useMediaQuery(theme.breakpoints.only('lg'));
+	const screenLarge = useMediaQuery(theme.breakpoints.up('lg'));
 	const screenMedium = useMediaQuery(theme.breakpoints.only('md'));
 	const screenSmall = useMediaQuery(theme.breakpoints.only('sm'));
 	const screenExtraSmall = useMediaQuery(theme.breakpoints.only('xs'));
