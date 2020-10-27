@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
 import IconButton from '@material-ui/core/IconButton';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
@@ -11,7 +13,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useTheme, makeStyles, withStyles } from '@material-ui/core/styles';
 import { useDropzone } from 'react-dropzone';
 import { withFirebase } from './Firebase';
-import { BrowserView, MobileView, isMobile } from 'react-device-detect';
+import { BrowserView, MobileView } from 'react-device-detect';
 
 import CloseIcon from '@material-ui/icons/Close';
 import VerticalAlignTopIcon from '@material-ui/icons/VerticalAlignTop';
@@ -26,8 +28,15 @@ const useStyles = makeStyles((theme) => ({
 		justifyContent: 'center',
 		alignItems: 'center',
 		padding: theme.spacing(4),
-		marginTop: theme.spacing(3),
+		margin: theme.spacing(3, 0),
 		border: '3px dashed #E5E5E5',
+		"&:focus": {
+			outline: 'none',
+			border: '3px dashed #BDBDBD'
+		},
+		[theme.breakpoints.down('sm')]: {
+			padding: theme.spacing(2),
+		}
 	},
 	uploadIcon: {
 		fontSize: '3.5rem',
@@ -37,6 +46,19 @@ const useStyles = makeStyles((theme) => ({
 	uploadText: {
 		margin: theme.spacing(1, 3, 3, 3),
 	},
+	gridListContainer: {
+		display: 'flex',
+		flexWrap: 'wrap',
+		justifyContent: 'space-around',
+		overflow: 'hidden',
+		margin: theme.spacing(3, 0, 0, 0),
+	},
+	gridList: {
+		width: '100%'
+	},
+	image: {
+		objectFit: 'cover'
+	}
 }));
 
 const styles = (theme) => ({
@@ -138,16 +160,18 @@ const AddImageModal = (props) => {
 
 	// Use full screen dialog for smaller screens
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+	const mobileColumns = useMediaQuery(theme.breakpoints.down('xs')) ? 2 : 3;
+	const deskTopColumns = useMediaQuery(theme.breakpoints.down('md')) ? 4 : 5;
+
 	const thumbs = files.map((file) => (
-		<div style={{ display: 'inline-flex' }} key={file.name}>
-			<div style={{ display: 'flex' }}>
+		<GridListTile key={file.name} cols={1}>
 				<img
+					className={classes.image}
 					src={file.preview}
-					width={isMobile ? '80%' : 100}
-					height={isMobile ? '80%' : 100}
+					alt={file.name}
 				/>
-			</div>
-		</div>
+		</GridListTile>
 	));
 
 	useEffect(() => {
@@ -156,7 +180,7 @@ const AddImageModal = (props) => {
 	}, [files]);
 
 	return (
-		<Dialog fullScreen={fullScreen} open={props.open}>
+		<Dialog fullWidth maxWidth={'md'} fullScreen={fullScreen} open={props.open}>
 			<DialogTitle onClose={props.handleClose}>Add image</DialogTitle>
 			<DialogContent dividers>
 				<BrowserView>
@@ -177,7 +201,13 @@ const AddImageModal = (props) => {
 							Choose an image or drag and drop it here
 						</Typography>
 					</div>
-					{thumbs && <aside>{thumbs}</aside>}
+					{thumbs &&
+						<div className={classes.gridListContainer}>
+							<GridList cellHeight={145} className={classes.gridList} cols={deskTopColumns}>
+								{thumbs}
+							</GridList>
+						</div>
+					}
 				</BrowserView>
 				<MobileView>
 					<Button
@@ -187,7 +217,13 @@ const AddImageModal = (props) => {
 						Choose image
 					</Button>
 					<input {...getInputProps()} />
-					{thumbs && <aside>{thumbs}</aside>}
+					{thumbs &&
+					<div className={classes.gridListContainer}>
+						<GridList cellHeight={145} className={classes.gridList} cols={mobileColumns}>
+							{thumbs}
+						</GridList>
+					</div>
+					}
 				</MobileView>
 			</DialogContent>
 
