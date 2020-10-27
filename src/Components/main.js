@@ -18,40 +18,24 @@ const useStyles = makeStyles((theme) => ({
 	container: {
 		padding: 0,
 		height: '100%',
+		maxWidth: 'none',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'center',
+		justifyContent: 'center'
 	},
 	content: {
 		display: 'flex',
-		transition: theme.transitions.create('margin', {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.leavingScreen,
-		}),
+		width: '100%',
 		marginLeft: 0,
-	},
-	contentShift: {
-		transition: theme.transitions.create('margin', {
-			easing: theme.transitions.easing.easeOut,
-			duration: theme.transitions.duration.enteringScreen,
-		}),
-		marginLeft: drawerWidth,
 	},
 	buttonContainer: {
 		position: 'absolute',
 		left: '50%',
 		transform: 'translateX(-50%)',
 		bottom: theme.spacing(4),
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
 	},
 	buttonContainerShift: {
-		width: `calc(100% - ${drawerWidth}px)`,
-	},
-	placeholderButton: {
-		marginBottom: theme.spacing(10),
+		// TODO can button be centered?
 	},
 }));
 
@@ -97,9 +81,7 @@ const Main = (props) => {
 			<AddImageModal open={openModal} handleClose={handleCloseModal} />
 
 			<main
-				className={clsx(classes.content, {
-					[classes.contentShift]: openSidePanel,
-				})}
+				className={classes.content}
 			>
 				<Map
 					openSidePanel={() => setOpenSidePanel(true)}
@@ -114,20 +96,10 @@ const Main = (props) => {
 						size="medium"
 						variant="extended"
 						color="primary"
-						className={classes.placeholderButton}
-						onClick={() => handleClickOpenSidePanel()}
-					>
-						{/* TODO: this is a placeholder button for map location*/}
-						Open location
-					</Fab>
-					<Fab
-						size="medium"
-						variant="extended"
-						color="primary"
 						onClick={() => handleClickOpenModal()}
 						className={classes.fab}
 					>
-						Add image to my location
+						Add image here
 					</Fab>
 				</Box>
 			</main>
