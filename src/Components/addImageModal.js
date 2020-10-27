@@ -161,8 +161,24 @@ const AddImageModal = (props) => {
 	// Use full screen dialog for smaller screens
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const mobileColumns = useMediaQuery(theme.breakpoints.down('xs')) ? 2 : 3;
-	const deskTopColumns = useMediaQuery(theme.breakpoints.down('md')) ? 4 : 5;
+	const screenLarge = useMediaQuery(theme.breakpoints.only('lg'));
+	const screenMedium = useMediaQuery(theme.breakpoints.only('md'));
+	const screenSmall = useMediaQuery(theme.breakpoints.only('sm'));
+	const screenExtraSmall = useMediaQuery(theme.breakpoints.only('xs'));
+
+	const columns = () => {
+		if (screenLarge) {
+			return 5;
+		} else if (screenMedium) {
+			return 4;
+		} else if (screenSmall) {
+			return 3;
+		} else if (screenExtraSmall) {
+			return 2;
+		} else {
+			return 3;
+		}
+	};
 
 	const thumbs = files.map((file) => (
 		<GridListTile key={file.name} cols={1}>
@@ -203,7 +219,7 @@ const AddImageModal = (props) => {
 					</div>
 					{thumbs &&
 						<div className={classes.gridListContainer}>
-							<GridList cellHeight={145} className={classes.gridList} cols={deskTopColumns}>
+							<GridList cellHeight={145} className={classes.gridList} cols={columns()}>
 								{thumbs}
 							</GridList>
 						</div>
@@ -219,7 +235,7 @@ const AddImageModal = (props) => {
 					<input {...getInputProps()} />
 					{thumbs &&
 					<div className={classes.gridListContainer}>
-						<GridList cellHeight={145} className={classes.gridList} cols={mobileColumns}>
+						<GridList cellHeight={145} className={classes.gridList} cols={columns()}>
 							{thumbs}
 						</GridList>
 					</div>
