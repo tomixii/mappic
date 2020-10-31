@@ -12,7 +12,7 @@ import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
 import { setLocation } from '../redux/actions/dataActions';
 
-const drawerWidth = 400;
+const drawerWidth = 450;
 
 const useStyles = makeStyles((theme) => ({
 	container: {
