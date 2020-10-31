@@ -2,6 +2,8 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
+import 'firebase/messaging';
+import * as serviceWorker from '../../serviceWorker';
 
 const config = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -10,15 +12,24 @@ const config = {
     projectId: process.env.REACT_APP_PROJECT_ID,
     storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
     messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_APP_ID,
 };
 
 class Firebase {
     constructor() {
         app.initializeApp(config);
 
+
         this.auth = app.auth();
         this.db = app.firestore();
         this.storage = app.storage()
+        this.messaging = app.messaging()
+        // If you want your app to work offline and load faster, you can change
+        // unregister() to register() below. Note this comes with some pitfalls.
+        // Learn more about service workers: https://bit.ly/CRA-PWA
+        navigator.serviceWorker.register('/firebase-messaging-sw.js').then((registration) => {
+                this.messaging.useServiceWorker(registration);
+            });
     }
     // *** Auth API ***
 

@@ -16,6 +16,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 
 import { setLocation } from '../redux/actions/dataActions';
+import { withFirebase } from "./Firebase";
 
 const drawerWidth = 400; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
@@ -93,6 +94,28 @@ const SidePanel = (props) => {
 	const classes = useStyles();
 	//const theme = useTheme();
 
+/*
+axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
+        "title": "Firebase",
+        "body": "Firebase is awesome",
+        "click_action": "http://localhost:3000/",
+        "icon": "http://url-to-an-icon/icon.png"
+    },
+    "to": "USER TOKEN"}).then((res)=> consol.log(res)).catch(err => console.log(err))
+ */
+
+	const askForPermissioToReceiveNotifications = async () => {
+		try {
+			const messaging = props.firebase.messaging;
+			await messaging.requestPermission();
+			const token = await messaging.getToken();
+			console.log('user token:', token);
+
+			return token;
+		} catch (error) {
+			console.error(error);
+		}
+	}
 	return (
 		<Drawer
 			className={classes.drawer}
@@ -138,6 +161,7 @@ const SidePanel = (props) => {
 					variant="contained"
 					disableElevation
 					color="primary"
+					onClick={() => askForPermissioToReceiveNotifications()}
 				>
 					Request images
 				</Button>
@@ -172,4 +196,4 @@ const mapActionsToProps = {
 	setLocation,
 };
 
-export default connect(mapStateToProps, mapActionsToProps)(SidePanel);
+export default connect(mapStateToProps, mapActionsToProps)(withFirebase(SidePanel));
