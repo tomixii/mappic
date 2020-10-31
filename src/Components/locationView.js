@@ -17,7 +17,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import { isMobile } from 'react-device-detect';
 
-const drawerWidth = 600; // TODO something not fixed?
+import { setLocation } from '../redux/actions/dataActions';
+import { withFirebase } from "./Firebase";
+
+const drawerWidth = 400; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
 	drawer: {
 		width: '100%',
@@ -180,6 +183,28 @@ const SidePanel = (props) => {
 
 	const previewImages = screenSmall ? props.data.areaImages.slice(0, 4) :props.data.areaImages.slice(0, 3);
 
+/*
+axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
+        "title": "Firebase",
+        "body": "Firebase is awesome",
+        "click_action": "http://localhost:3000/",
+        "icon": "http://url-to-an-icon/icon.png"
+    },
+    "to": "USER TOKEN"}).then((res)=> consol.log(res)).catch(err => console.log(err))
+ */
+
+	const askForPermissioToReceiveNotifications = async () => {
+		try {
+			const messaging = props.firebase.messaging;
+			await messaging.requestPermission();
+			const token = await messaging.getToken();
+			console.log('user token:', token);
+
+			return token;
+		} catch (error) {
+			console.error(error);
+		}
+	}
 	return (
 		<Drawer
 			className={classes.drawer}
@@ -248,10 +273,8 @@ const SidePanel = (props) => {
 					size={screenExtraSmall ? 'small' : 'medium'}
 					variant='contained'
 					disableElevation
-					color='primary'
-					onClick={() => {
-						// TODO
-					}}
+					color="primary"
+					onClick={() => askForPermissioToReceiveNotifications()}
 				>
 					Request images
 				</Button>
@@ -301,4 +324,8 @@ const mapStateToProps = (state) => ({
 	data: state.data,
 });
 
-export default connect(mapStateToProps, null)(SidePanel);
+const mapActionsToProps = {
+	setLocation,
+};
+
+export default connect(mapStateToProps, mapActionsToProps)(withFirebase(SidePanel));
