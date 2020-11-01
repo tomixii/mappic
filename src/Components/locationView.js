@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
 			cursor: 'pointer',
 			opacity: 0.7
 		},
-		backgroundColor: 'black'
+		overflow: 'hidden'
 	},
 	placeholderImage: {
 		fontSize: '8rem',
@@ -155,12 +155,11 @@ const useStyles = makeStyles((theme) => ({
 		'&:hover': {
 			cursor: 'pointer',
 			opacity: 0.7
-		}
+		},
+		overflow: 'hidden'
 	},
 	image: {
-		objectFit: 'cover',
 		width: '100%',
-		height: '100%'
 	}
 }));
 
