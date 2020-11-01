@@ -17,8 +17,9 @@ const drawerWidth = 450;
 
 const useStyles = makeStyles((theme) => ({
 	container: {
+		position: 'relative',
+		top: 0,
 		padding: 0,
-		height: '100%',
 		maxWidth: 'none',
 		display: 'flex',
 		flexDirection: 'column',

@@ -9,6 +9,7 @@ import Drawer from '@material-ui/core/Drawer';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import IconButton from '@material-ui/core/IconButton';
+import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery/useMediaQuery';
@@ -30,16 +31,14 @@ const useStyles = makeStyles((theme) => ({
 		flexShrink: 0,
 	},
 	drawerPaper: {
-		top: 64, // App bar height
 		width: '100%',
-		height: 'calc(100vh - 64px)',
+		marginTop: '64px',
 		[theme.breakpoints.up('md')]: {
 			width: '40%',
 			maxWidth: drawerWidth,
 		},
 		[theme.breakpoints.only('xs')]: {
-			top: 56, // App bar height
-			height: 'calc(100vh - 56px)',
+			marginTop: '56px',
 		}
 	},
 	drawerHeader: {
@@ -63,7 +62,8 @@ const useStyles = makeStyles((theme) => ({
 			cursor: 'pointer',
 			opacity: 0.7
 		},
-		overflow: 'hidden'
+		overflow: 'hidden',
+		background: 'black'
 	},
 	placeholderImage: {
 		fontSize: '8rem',

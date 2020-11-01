@@ -19,9 +19,9 @@ import { getDistanceFromLatLonInKm } from '../../utils';
 const useStyles = makeStyles((theme) => ({
 	mapContainer: {
 		width: '100%',
-		height: 'calc(100vh - 56px)', // Offset by appbar height
-		[theme.breakpoints.up('md')]: {
-			height: 'calc(100vh - 64px)' // Offset by appbar height
+		height: 'calc(100vh - 64px)', // Offset by appbar height
+		[theme.breakpoints.only('xs')]: {
+			height: 'calc(100vh - 56px)' // Offset by appbar height
 		}
 	},
 }));
