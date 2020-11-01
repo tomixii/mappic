@@ -7,6 +7,7 @@ import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
 import AddImageModal from './addImageModal';
+import ImageGallery from './ImageGallery';
 import Map from './Map/map';
 import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
@@ -43,6 +44,8 @@ const Main = (props) => {
 	const classes = useStyles();
 	const [openModal, setOpenModal] = React.useState(false);
 	const [openSidePanel, setOpenSidePanel] = React.useState(false);
+	const [openImageGallery, setOpenImageGallery] = React.useState(false);
+	const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
 	const handleClickOpenModal = () => {
 		navigator.geolocation.getCurrentPosition((position) => {
@@ -68,6 +71,15 @@ const Main = (props) => {
 		setOpenSidePanel(false);
 	};
 
+	const handleOpenImageGallery = (selectedImageIndex) => {
+		setSelectedImageIndex(selectedImageIndex);
+		setOpenImageGallery(true);
+	};
+
+	const handleCloseImageGallery = () => {
+		setOpenImageGallery(false);
+	};
+
 	return (
 		<Container className={classes.container}>
 			<SidePanel
@@ -77,9 +89,10 @@ const Main = (props) => {
 				open={openSidePanel}
 				handleClose={handleCloseSidePanel}
 				openAddImageModal={() => setOpenModal(true)}
+				openImageGallery={handleOpenImageGallery}
 			/>
 			<AddImageModal open={openModal} handleClose={handleCloseModal} />
-
+			<ImageGallery selectedItem={selectedImageIndex} open={openImageGallery} handleClose={handleCloseImageGallery} />
 			<main
 				className={classes.content}
 			>

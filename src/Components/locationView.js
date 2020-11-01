@@ -10,12 +10,14 @@ import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import CloseIcon from '@material-ui/icons/Close';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery/useMediaQuery';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
+import { isMobile } from 'react-device-detect';
 
 import { setLocation } from '../redux/actions/dataActions';
-import useMediaQuery from '@material-ui/core/useMediaQuery/useMediaQuery';
 
 const drawerWidth = 600; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
@@ -28,15 +30,17 @@ const useStyles = makeStyles((theme) => ({
 		flexShrink: 0,
 	},
 	drawerPaper: {
-		top: 56, // App bar height
+		top: 64, // App bar height
 		width: '100%',
-		height: 'calc(100vh - 56px)',
+		height: 'calc(100vh - 64px)',
 		[theme.breakpoints.up('md')]: {
-			top: 64, // App bar height
 			width: '40%',
-			height: 'calc(100vh - 64px)',
 			maxWidth: drawerWidth,
 		},
+		[theme.breakpoints.only('xs')]: {
+			top: 56, // App bar height
+			height: 'calc(100vh - 56px)',
+		}
 	},
 	drawerHeader: {
 		height: '33%',
@@ -62,6 +66,20 @@ const useStyles = makeStyles((theme) => ({
 		[theme.breakpoints.down('xs')]: {
 			top: 10,
 			right: 10,
+		},
+		color: 'white',
+		backgroundColor: 'rgba(0, 0, 0, 0.10)',
+		'&:hover': {
+			backgroundColor: 'rgba(0, 0, 0, 0.20)',
+		}
+	},
+	backButton: {
+		position: 'absolute',
+		top: 15,
+		left: 12,
+		[theme.breakpoints.down('xs')]: {
+			top: 10,
+			left: 10,
 		},
 		color: 'white',
 		backgroundColor: 'rgba(0, 0, 0, 0.10)',
@@ -122,6 +140,22 @@ const useStyles = makeStyles((theme) => ({
 		width: '100%',
 		padding: 0,
 	},
+	gridListTile: {
+		transition: '0.3s ease',
+		'&:hover': {
+			cursor: 'pointer',
+			opacity: 0.7
+		}
+	},
+	imageContainer: {
+		width: '100%',
+		height: '100%',
+		transition: '0.3s ease',
+		'&:hover': {
+			cursor: 'pointer',
+			opacity: 0.7
+		}
+	},
 	image: {
 		objectFit: 'cover',
 		width: '100%',
@@ -156,19 +190,30 @@ const SidePanel = (props) => {
 				paper: classes.drawerPaper,
 			}}
 		>
-			<Box className={classes.drawerHeader}>
+			<Box
+				className={classes.drawerHeader}
+			>
 				{props.data.areaImages.length > 0 ? (
-					<img
-						className={classes.image}
-						src={props.data.areaImages[0].imageUrl}
-						alt='thumbnail'
-					/>
+					<div className={classes.imageContainer} onClick={() => { props.openImageGallery(0) }}>
+						<img
+							className={classes.image}
+							src={props.data.areaImages[0].imageUrl}
+							alt='thumbnail'
+						/>
+					</div>
 				) : (
 					<PanoramaIcon className={classes.placeholderImage} />
 				)}
-				<IconButton className={classes.closeButton} onClick={props.handleClose}>
-					<CloseIcon />
-				</IconButton>
+				{
+					isMobile ?
+						<IconButton className={classes.backButton} onClick={props.handleClose}>
+							<ArrowBackIcon />
+						</IconButton>
+						:
+						<IconButton className={classes.closeButton} onClick={props.handleClose}>
+							<CloseIcon />
+						</IconButton>
+				}
 			</Box>
 			<Divider />
 			<Box className={classes.drawerSection}>
@@ -217,7 +262,11 @@ const SidePanel = (props) => {
 						<Box className={classes.gridContainer}>
 							<GridList cellHeight={screenExtraSmall ? 100 : 120} className={classes.gridList} cols={columns()}>
 								{previewImages.map((image, i) => (
-									<GridListTile key={i}>
+									<GridListTile
+										className={classes.gridListTile}
+										key={i}
+										onClick={() => props.openImageGallery(i)}
+									>
 										<img
 											className={classes.image}
 											src={image.imageUrl}
@@ -231,6 +280,7 @@ const SidePanel = (props) => {
 							className={classes.viewMoreButton}
 							color='primary'
 							size={screenExtraSmall ? 'small' : 'medium'}
+							onClick={() => {props.openImageGallery(0)}}
 						>
 							View images
 						</Button>
