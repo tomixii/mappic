@@ -55,6 +55,16 @@ const useStyles = makeStyles((theme) => ({
 			height: '30%'
 		}
 	},
+	headerImageContainer: {
+		width: '100%',
+		height: '100%',
+		transition: '0.3s ease',
+		'&:hover': {
+			cursor: 'pointer',
+			opacity: 0.7
+		},
+		backgroundColor: 'black'
+	},
 	placeholderImage: {
 		fontSize: '8rem',
 		color: theme.palette.grey[400],
@@ -147,15 +157,6 @@ const useStyles = makeStyles((theme) => ({
 			opacity: 0.7
 		}
 	},
-	imageContainer: {
-		width: '100%',
-		height: '100%',
-		transition: '0.3s ease',
-		'&:hover': {
-			cursor: 'pointer',
-			opacity: 0.7
-		}
-	},
 	image: {
 		objectFit: 'cover',
 		width: '100%',
@@ -194,7 +195,7 @@ const SidePanel = (props) => {
 				className={classes.drawerHeader}
 			>
 				{props.data.areaImages.length > 0 ? (
-					<div className={classes.imageContainer} onClick={() => { props.openImageGallery(0) }}>
+					<div className={classes.headerImageContainer} onClick={() => { props.openImageGallery(0) }}>
 						<img
 							className={classes.image}
 							src={props.data.areaImages[0].imageUrl}

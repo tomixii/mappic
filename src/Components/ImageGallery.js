@@ -47,11 +47,15 @@ const useStyles = makeStyles((theme) => ({
     },
     image: {
         objectFit: 'contain',
-        width: '100%',
-        height: '100%'
+        width: 'auto !important',
+        maxWidth: '100%',
+        maxHeight: '100%'
     },
     imageContainer: {
         height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         padding: theme.spacing(8, 0)
     },
 }));
