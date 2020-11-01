@@ -160,6 +160,9 @@ const useStyles = makeStyles((theme) => ({
 	},
 	image: {
 		width: '100%',
+		top: '50%',
+		position: 'relative',
+		transform:  'translateY(-50%)'
 	}
 }));
 
@@ -268,7 +271,6 @@ const SidePanel = (props) => {
 										onClick={() => props.openImageGallery(i)}
 									>
 										<img
-											className={classes.image}
 											src={image.imageUrl}
 											alt='thumbnail'
 										/>
