@@ -1,6 +1,7 @@
 import React from 'react';
+import Typography from '@material-ui/core/Typography';
 
-const MapMarker = ({ lat, lng }) => {
+const MapMarker = ({ lat, lng, count, nofImages }) => {
 	return (
 		<div
 			lat={lat}
@@ -17,7 +18,13 @@ const MapMarker = ({ lat, lng }) => {
 				top: -13,
 				left: -13,
 			}}
-		/>
+		>
+			{count && (
+				<div onClick={() => {}}>
+					<Typography>{count}</Typography>
+				</div>
+			)}
+		</div>
 	);
 };
 
