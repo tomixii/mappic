@@ -7,51 +7,37 @@ import Fab from '@material-ui/core/Fab';
 import { makeStyles } from '@material-ui/core/styles';
 
 import AddImageModal from './addImageModal';
+import ImageGallery from './ImageGallery';
 import Map from './Map/map';
 import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
 import { setLocation } from '../redux/actions/dataActions';
 
-const drawerWidth = 400;
+const drawerWidth = 450;
 
 const useStyles = makeStyles((theme) => ({
 	container: {
+		position: 'relative',
+		top: 0,
 		padding: 0,
-		height: '100%',
+		maxWidth: 'none',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'center',
+		justifyContent: 'center'
 	},
 	content: {
 		display: 'flex',
-		transition: theme.transitions.create('margin', {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.leavingScreen,
-		}),
+		width: '100%',
 		marginLeft: 0,
-	},
-	contentShift: {
-		transition: theme.transitions.create('margin', {
-			easing: theme.transitions.easing.easeOut,
-			duration: theme.transitions.duration.enteringScreen,
-		}),
-		marginLeft: drawerWidth,
 	},
 	buttonContainer: {
 		position: 'absolute',
 		left: '50%',
 		transform: 'translateX(-50%)',
 		bottom: theme.spacing(4),
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
 	},
 	buttonContainerShift: {
-		width: `calc(100% - ${drawerWidth}px)`,
-	},
-	placeholderButton: {
-		marginBottom: theme.spacing(10),
+		// TODO can button be centered?
 	},
 }));
 
@@ -59,6 +45,8 @@ const Main = (props) => {
 	const classes = useStyles();
 	const [openModal, setOpenModal] = React.useState(false);
 	const [openSidePanel, setOpenSidePanel] = React.useState(false);
+	const [openImageGallery, setOpenImageGallery] = React.useState(false);
+	const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
 	const handleClickOpenModal = () => {
 		navigator.geolocation.getCurrentPosition((position) => {
@@ -84,6 +72,15 @@ const Main = (props) => {
 		setOpenSidePanel(false);
 	};
 
+	const handleOpenImageGallery = (selectedImageIndex) => {
+		setSelectedImageIndex(selectedImageIndex);
+		setOpenImageGallery(true);
+	};
+
+	const handleCloseImageGallery = () => {
+		setOpenImageGallery(false);
+	};
+
 	return (
 		<Container className={classes.container}>
 			<SidePanel
@@ -93,13 +90,12 @@ const Main = (props) => {
 				open={openSidePanel}
 				handleClose={handleCloseSidePanel}
 				openAddImageModal={() => setOpenModal(true)}
+				openImageGallery={handleOpenImageGallery}
 			/>
 			<AddImageModal open={openModal} handleClose={handleCloseModal} />
-
+			<ImageGallery selectedItem={selectedImageIndex} open={openImageGallery} handleClose={handleCloseImageGallery} />
 			<main
-				className={clsx(classes.content, {
-					[classes.contentShift]: openSidePanel,
-				})}
+				className={classes.content}
 			>
 				<Map
 					openSidePanel={() => setOpenSidePanel(true)}
@@ -114,20 +110,10 @@ const Main = (props) => {
 						size="medium"
 						variant="extended"
 						color="primary"
-						className={classes.placeholderButton}
-						onClick={() => handleClickOpenSidePanel()}
-					>
-						{/* TODO: this is a placeholder button for map location*/}
-						Open location
-					</Fab>
-					<Fab
-						size="medium"
-						variant="extended"
-						color="primary"
 						onClick={() => handleClickOpenModal()}
 						className={classes.fab}
 					>
-						Add image to my location
+						Add image here
 					</Fab>
 				</Box>
 			</main>

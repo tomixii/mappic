@@ -15,15 +15,14 @@ import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
-import { Grow } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
 	mapContainer: {
 		width: '100%',
-		height: '100vh',
-		position: 'absolute',
-		top: 0,
-		left: 0,
+		height: 'calc(100vh - 64px)', // Offset by appbar height
+		[theme.breakpoints.only('xs')]: {
+			height: 'calc(100vh - 56px)' // Offset by appbar height
+		}
 	},
 }));
 
