@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 //import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
 import GoogleMapReact, { meters2ScreenPixels } from 'google-map-react';
 import { makeStyles } from '@material-ui/core/styles';
+import useSupercluster from 'use-supercluster';
 import { withFirebase } from '../Firebase';
 
 import {
@@ -31,6 +32,7 @@ const MapContainer = (props) => {
 
 	//const [markers, setMarkers] = React.useState([]);
 	const [currentZoom, setCurrentZoom] = React.useState(14);
+	const [bounds, setBounds] = React.useState({});
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
@@ -40,6 +42,23 @@ const MapContainer = (props) => {
 			west: map.getBounds().Sa.i,
 		});
 	};
+	useEffect(() => {
+		if (bounds.north) fetchImagesInBounds(bounds);
+	}, [bounds]);
+
+	const { clusters, supercluster } = useSupercluster({
+		points: props.data.mapImages.map((img) => ({
+			type: 'Feature',
+			properties: { cluster: false, ...img },
+			geometry: {
+				type: 'Point',
+				coordinates: [parseFloat(img.lng), parseFloat(img.lat)],
+			},
+		})),
+		bounds: [bounds.west, bounds.south, bounds.east, bounds.north],
+		zoom: currentZoom,
+		options: { radius: 75, maxZoom: 20 },
+	});
 
 	const fetchImagesInBounds = (bounds) => {
 		const images = [];
@@ -56,9 +75,9 @@ const MapContainer = (props) => {
 				});
 			})
 			.then(() => {
-				console.log(images);
+				//console.log(images);
 				props.setMapImages(images);
-				console.log(`Saved ${images.length} image(s) to redux`);
+				//console.log(`Saved ${images.length} image(s) to redux`);
 			});
 	};
 
@@ -72,7 +91,7 @@ const MapContainer = (props) => {
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 				onChange={(event) => {
 					setCurrentZoom(event.zoom);
-					fetchImagesInBounds({
+					setBounds({
 						north: event.bounds.ne.lat,
 						east: event.bounds.ne.lng,
 						south: event.bounds.sw.lat,
@@ -96,9 +115,31 @@ const MapContainer = (props) => {
 					*/
 				}}
 			>
-				{props.data.mapImages.map((marker, i) => (
-					<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
-				))}
+				{clusters.map((cluster, i) => {
+					const [lng, lat] = cluster.geometry.coordinates;
+					const {
+						cluster: isCluster,
+						point_count: pointCount,
+					} = cluster.properties;
+
+					if (isCluster) {
+						return (
+							<MapMarker
+								key={`cluster-${cluster.id}`}
+								lat={lat}
+								lng={lng}
+								count={pointCount}
+								nofImages={props.data.mapImages}
+							></MapMarker>
+						);
+					}
+
+					return <MapMarker key={`img-${i}`} lat={lat} lng={lng} />;
+				})}
+				{false &&
+					props.data.mapImages.map((marker, i) => (
+						<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
+					))}
 				{props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}

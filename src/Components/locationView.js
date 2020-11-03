@@ -116,9 +116,16 @@ const SidePanel = (props) => {
 			<Divider />
 			<Box className={classes.drawerSection}>
 				<Typography className={classes.sectionTitle}>
-					{props.locationName}
+					{`There are ${props.data.areaImages.length} image(s) nearby.`}
 				</Typography>
-				<Typography>{props.locationInfo}</Typography>
+				<Typography>
+					{props.data.location &&
+						`${
+							Math.round((props.data.location.lng + Number.EPSILON) * 100) / 100
+						}, ${
+							Math.round((props.data.location.lat + Number.EPSILON) * 100) / 100
+						}`}
+				</Typography>
 			</Box>
 			<Divider />
 			<Box
