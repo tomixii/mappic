@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import GridList from '@material-ui/core/GridList';
@@ -216,7 +215,7 @@ const AddImageModal = (props) => {
 					color="primary"
 					className={classes.footerButton}
 					onClick={() => {
-						props.handlePictures(files, props.data);
+						props.handlePictures(files);
 						setFiles([]);
 						/* TODO: Tell to users that "pictures(s) added successfully" */
 						props.handleClose();
@@ -238,8 +237,4 @@ const AddImageModal = (props) => {
 	);
 };
 
-const mapStateToProps = (state) => ({
-	data: state.data,
-});
-
-export default connect(mapStateToProps, null)(withFirebase(AddImageModal));
+export default withFirebase(AddImageModal);

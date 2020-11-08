@@ -13,7 +13,8 @@ import ImageGallery from './ImageGallery';
 import Map from './Map/map';
 import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
-import { setMapImages, setLocation } from '../redux/actions/dataActions';
+import { setAreaImages, setMapImages, setLocation } from '../redux/actions/dataActions';
+import { getDistanceFromLatLonInKm } from '../utils';
 
 const drawerWidth = 450;
 
@@ -64,14 +65,6 @@ const Main = (props) => {
 	const [bounds, setBounds] = React.useState({});
 
 	const handleClickOpenModal = () => {
-		navigator.geolocation.getCurrentPosition((position) => {
-			console.log(position);
-			props.setLocation({
-				lng: position.coords.longitude,
-				lat: position.coords.latitude,
-			});
-		});
-
 		setOpenModal(true);
 	};
 
@@ -104,7 +97,7 @@ const Main = (props) => {
 		setOpenSnackbar(false);
 	};
 
-	const handlePictures = (files, data) => {
+	const handlePictures = (files) => {
 		files.forEach((file) => {
 			const imageExtension = file.path.split('.')[
 			file.path.split('.').length - 1
@@ -120,8 +113,8 @@ const Main = (props) => {
 					props.firebase
 						.pictures()
 						.add({
-							lat: data.location.lat,
-							lng: data.location.lng,
+							lat: props.data.location.lat,
+							lng: props.data.location.lng,
 							imageUrl:
 								'https://firebasestorage.googleapis.com/v0/b/mappic.appspot.com/o/images%2F' +
 								imageFileName +
@@ -129,7 +122,14 @@ const Main = (props) => {
 							createdAt: new Date().toISOString(),
 						})
 						.then(function (docRef) {
-							fetchImagesInBounds(bounds);
+							const { lat, lng } = props.data.location;
+							fetchImagesInBounds(bounds).then((images) => {
+								props.setAreaImages(
+									images.filter(
+										(image) => getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
+									)
+								)
+							});
 							const message = files.length > 1 ? "Images uploaded successfully!" : "Image uploaded successfully!";
 							setAlert({ severity: "success", message: message });
 							setOpenSnackbar(true);
@@ -147,7 +147,7 @@ const Main = (props) => {
 
 	const fetchImagesInBounds = (bounds) => {
 		const images = [];
-		props.firebase
+		return props.firebase
 			.pictures()
 			.where('lat', '<', bounds.north)
 			.where('lat', '>', bounds.south)
@@ -162,6 +162,7 @@ const Main = (props) => {
 			.then(() => {
 				//console.log(images);
 				props.setMapImages(images);
+				return images;
 				//console.log(`Saved ${images.length} image(s) to redux`);
 			});
 	};
@@ -169,12 +170,10 @@ const Main = (props) => {
 	return (
 		<Container className={classes.container}>
 			<SidePanel
-				locationName="Example location"
-				locationInfo="Other location info"
 				drawerWidth={drawerWidth}
 				open={openSidePanel}
 				handleClose={handleCloseSidePanel}
-				openAddImageModal={() => handleClickOpenSidePanel()}
+				openAddImageModal={() => handleClickOpenModal()}
 				openImageGallery={handleOpenImageGallery}
 			/>
 			<AddImageModal
@@ -190,7 +189,7 @@ const Main = (props) => {
 					bounds={bounds}
 					setBounds={setBounds}
 					fetchImagesInBounds={fetchImagesInBounds}
-					openSidePanel={() => setOpenSidePanel(true)}
+					openSidePanel={() => handleClickOpenSidePanel()}
 					showCircle={openSidePanel}
 				/>
 				<Box
@@ -202,7 +201,15 @@ const Main = (props) => {
 						size="medium"
 						variant="extended"
 						color="primary"
-						onClick={() => handleClickOpenModal()}
+						onClick={() => {
+							navigator.geolocation.getCurrentPosition((position) => {
+								props.setLocation({
+									lng: position.coords.longitude,
+									lat: position.coords.latitude,
+								});
+							});
+							handleClickOpenModal();
+						}}
 						className={classes.fab}
 					>
 						Add image here
@@ -227,6 +234,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapActionsToProps = {
+	setAreaImages,
 	setMapImages,
 	setLocation,
 };
