@@ -17,8 +17,6 @@ import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import { isMobile } from 'react-device-detect';
 
-import { setLocation } from '../redux/actions/dataActions';
-
 const drawerWidth = 600; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
 	drawer: {
@@ -251,6 +249,9 @@ const SidePanel = (props) => {
 					variant='contained'
 					disableElevation
 					color='primary'
+					onClick={() => {
+						// TODO
+					}}
 				>
 					Request images
 				</Button>
@@ -300,8 +301,4 @@ const mapStateToProps = (state) => ({
 	data: state.data,
 });
 
-const mapActionsToProps = {
-	setLocation,
-};
-
-export default connect(mapStateToProps, mapActionsToProps)(SidePanel);
+export default connect(mapStateToProps, null)(SidePanel);
