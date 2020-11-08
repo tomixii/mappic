@@ -10,10 +10,10 @@ const SearchArea = (props) => {
 				width: props.pixels.w,
 				height: props.pixels.h,
 				borderWidth: 3,
-				borderColor: 'red',
+				borderColor: '#186fd6',
 				borderStyle: 'solid',
 				borderRadius: props.pixels.w * 3,
-				backgroundColor: 'lightblue',
+				backgroundColor: '#B1DFFB',
 			}}
 		/>
 	);
