@@ -57,6 +57,17 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 		options: { radius: 75, maxZoom: 20 },
 	});
 
+	const handleOpenSidePanel = (lat, lng) => {
+		props.setLocation({ lat, lng });
+		props.setAreaImages(
+			props.data.mapImages.filter(
+				(image) =>
+					getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
+			)
+		);
+		props.openSidePanel();
+	};
+
 	return (
 		<div className={classes.mapContainer}>
 			<GoogleMapReact
@@ -76,15 +87,7 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 				}}
 				onClick={(coord) => {
 					const { lat, lng } = coord;
-					props.setLocation({ lat, lng });
-
-					props.setAreaImages(
-						props.data.mapImages.filter(
-							(image) =>
-								getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
-						)
-					);
-					props.openSidePanel();
+					handleOpenSidePanel(lat, lng);
 					/*
 					setMarkers([...markers, { lat, lng }]);
 					console.log('marker added at: ', lat, lng);
@@ -106,16 +109,20 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 								lng={lng}
 								count={pointCount}
 								nofImages={props.data.mapImages}
-							></MapMarker>
+								handleClickMarker={handleOpenSidePanel}
+							/>
 						);
 					}
 
-					return <MapMarker key={`img-${i}`} lat={lat} lng={lng} />;
+					return (
+						<MapMarker
+							key={`img-${i}`}
+							lat={lat}
+							lng={lng}
+							handleClickMarker={handleOpenSidePanel}
+						/>
+					);
 				})}
-				{false &&
-					props.data.mapImages.map((marker, i) => (
-						<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
-					))}
 				{props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}

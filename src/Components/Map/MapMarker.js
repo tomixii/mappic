@@ -20,16 +20,17 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const MapMarker = ({ lat, lng, count, nofImages }) => {
+const MapMarker = ({ lat, lng, count, nofImages, handleClickMarker }) => {
 	const classes = useStyles();
 	return (
 		<div
 			lat={lat}
 			lng={lng}
 			className={classes.container}
+			onClick={() => handleClickMarker(lat, lng)}
 		>
 			{count && (
-				<div onClick={() => {}}>
+				<div>
 					<Typography>{count}</Typography>
 				</div>
 			)}
