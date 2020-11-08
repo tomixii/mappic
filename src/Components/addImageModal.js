@@ -124,40 +124,6 @@ const AddImageModal = (props) => {
 		},
 	});
 
-	const handlePictures = () => {
-		files.forEach((file) => {
-			const imageExtension = file.path.split('.')[
-				file.path.split('.').length - 1
-			];
-			//234124124.png
-			const imageFileName = `${Math.round(
-				Math.random() * 100000000
-			)}.${imageExtension}`;
-			props.firebase.storage
-				.ref(`images/${imageFileName}`)
-				.put(file)
-				.then(() => {
-					props.firebase
-						.pictures()
-						.add({
-							lat: props.data.location.lat,
-							lng: props.data.location.lng,
-							imageUrl:
-								'https://firebasestorage.googleapis.com/v0/b/mappic.appspot.com/o/images%2F' +
-								imageFileName +
-								'?alt=media',
-							createdAt: new Date().toISOString(),
-						})
-						.then(function (docRef) {
-							console.log('Document written with ID: ', docRef.id);
-						})
-						.catch(function (error) {
-							console.error('Error adding document: ', error);
-						});
-				});
-		});
-	};
-
 	// Use full screen dialog for smaller screens
 	const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -250,7 +216,7 @@ const AddImageModal = (props) => {
 					color="primary"
 					className={classes.footerButton}
 					onClick={() => {
-						handlePictures();
+						props.handlePictures(files, props.data);
 						setFiles([]);
 						/* TODO: Tell to users that "pictures(s) added successfully" */
 						props.handleClose();

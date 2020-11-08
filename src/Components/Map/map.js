@@ -7,7 +7,6 @@ import useSupercluster from 'use-supercluster';
 import { withFirebase } from '../Firebase';
 
 import {
-	setMapImages,
 	setAreaImages,
 	setLocation,
 } from '../../redux/actions/dataActions';
@@ -26,12 +25,11 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const MapContainer = (props) => {
+const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 	const classes = useStyles();
 
 	//const [markers, setMarkers] = React.useState([]);
 	const [currentZoom, setCurrentZoom] = React.useState(14);
-	const [bounds, setBounds] = React.useState({});
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
@@ -43,7 +41,7 @@ const MapContainer = (props) => {
 	};
 	useEffect(() => {
 		if (bounds.north) fetchImagesInBounds(bounds);
-	}, [bounds]);
+	}, [bounds, fetchImagesInBounds]);
 
 	const { clusters, supercluster } = useSupercluster({
 		points: props.data.mapImages.map((img) => ({
@@ -59,27 +57,6 @@ const MapContainer = (props) => {
 		options: { radius: 75, maxZoom: 20 },
 	});
 
-	const fetchImagesInBounds = (bounds) => {
-		const images = [];
-		props.firebase
-			.pictures()
-			.where('lat', '<', bounds.north)
-			.where('lat', '>', bounds.south)
-			.get()
-			.then((data) => {
-				data.forEach((doc) => {
-					if (doc.data().lng > bounds.west && doc.data().lng < bounds.east) {
-						images.push(doc.data());
-					}
-				});
-			})
-			.then(() => {
-				//console.log(images);
-				props.setMapImages(images);
-				//console.log(`Saved ${images.length} image(s) to redux`);
-			});
-	};
-
 	return (
 		<div className={classes.mapContainer}>
 			<GoogleMapReact
@@ -90,7 +67,7 @@ const MapContainer = (props) => {
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 				onChange={(event) => {
 					setCurrentZoom(event.zoom);
-					setBounds({
+					props.setBounds({
 						north: event.bounds.ne.lat,
 						east: event.bounds.ne.lng,
 						south: event.bounds.sw.lat,
@@ -163,7 +140,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapActionsToProps = {
-	setMapImages,
 	setAreaImages,
 	setLocation,
 };
