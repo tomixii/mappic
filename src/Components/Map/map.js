@@ -103,10 +103,18 @@ const MapContainer = (props) => {
 					props.setLocation({ lat, lng });
 
 					props.setAreaImages(
-						props.data.mapImages.filter(
-							(image) =>
-								getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
-						)
+						props.data.mapImages
+							.map((image) => ({
+								...image,
+								distance: getDistanceFromLatLonInKm(
+									image.lat,
+									image.lng,
+									lat,
+									lng
+								),
+							}))
+							.filter((image) => image.distance < 0.5)
+							.sort((a, b) => a.distance - b.distance)
 					);
 					props.openSidePanel();
 					/*
@@ -136,10 +144,6 @@ const MapContainer = (props) => {
 
 					return <MapMarker key={`img-${i}`} lat={lat} lng={lng} />;
 				})}
-				{false &&
-					props.data.mapImages.map((marker, i) => (
-						<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
-					))}
 				{props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}
