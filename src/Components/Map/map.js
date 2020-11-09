@@ -6,33 +6,27 @@ import { makeStyles } from '@material-ui/core/styles';
 import useSupercluster from 'use-supercluster';
 import { withFirebase } from '../Firebase';
 
-import {
-	setMapImages,
-	setAreaImages,
-	setLocation,
-} from '../../redux/actions/dataActions';
+import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
-import { Grow } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
 	mapContainer: {
 		width: '100%',
-		height: '100vh',
-		position: 'absolute',
-		top: 0,
-		left: 0,
+		height: 'calc(100vh - 64px)', // Offset by appbar height
+		[theme.breakpoints.only('xs')]: {
+			height: 'calc(100vh - 56px)', // Offset by appbar height
+		},
 	},
 }));
 
-const MapContainer = (props) => {
+const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 	const classes = useStyles();
 
 	//const [markers, setMarkers] = React.useState([]);
 	const [currentZoom, setCurrentZoom] = React.useState(14);
-	const [bounds, setBounds] = React.useState({});
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
@@ -44,7 +38,7 @@ const MapContainer = (props) => {
 	};
 	useEffect(() => {
 		if (bounds.north) fetchImagesInBounds(bounds);
-	}, [bounds]);
+	}, [bounds, fetchImagesInBounds]);
 
 	const { clusters, supercluster } = useSupercluster({
 		points: props.data.mapImages.map((img) => ({
@@ -60,25 +54,19 @@ const MapContainer = (props) => {
 		options: { radius: 75, maxZoom: 20 },
 	});
 
-	const fetchImagesInBounds = (bounds) => {
-		const images = [];
-		props.firebase
-			.pictures()
-			.where('lat', '<', bounds.north)
-			.where('lat', '>', bounds.south)
-			.get()
-			.then((data) => {
-				data.forEach((doc) => {
-					if (doc.data().lng > bounds.west && doc.data().lng < bounds.east) {
-						images.push(doc.data());
-					}
-				});
-			})
-			.then(() => {
-				//console.log(images);
-				props.setMapImages(images);
-				//console.log(`Saved ${images.length} image(s) to redux`);
-			});
+	const handleOpenSidePanel = (lat, lng) => {
+		props.setLocation({ lat, lng });
+
+		props.setAreaImages(
+			props.data.mapImages
+				.map((image) => ({
+					...image,
+					distance: getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng),
+				}))
+				.filter((image) => image.distance < 0.5)
+				.sort((a, b) => a.distance - b.distance)
+		);
+		props.openSidePanel();
 	};
 
 	return (
@@ -91,7 +79,7 @@ const MapContainer = (props) => {
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 				onChange={(event) => {
 					setCurrentZoom(event.zoom);
-					setBounds({
+					props.setBounds({
 						north: event.bounds.ne.lat,
 						east: event.bounds.ne.lng,
 						south: event.bounds.sw.lat,
@@ -100,27 +88,7 @@ const MapContainer = (props) => {
 				}}
 				onClick={(coord) => {
 					const { lat, lng } = coord;
-					props.setLocation({ lat, lng });
-
-					props.setAreaImages(
-						props.data.mapImages
-							.map((image) => ({
-								...image,
-								distance: getDistanceFromLatLonInKm(
-									image.lat,
-									image.lng,
-									lat,
-									lng
-								),
-							}))
-							.filter((image) => image.distance < 0.5)
-							.sort((a, b) => a.distance - b.distance)
-					);
-					props.openSidePanel();
-					/*
-					setMarkers([...markers, { lat, lng }]);
-					console.log('marker added at: ', lat, lng);
-					*/
+					handleOpenSidePanel(lat, lng);
 				}}
 			>
 				{clusters.map((cluster, i) => {
@@ -138,11 +106,19 @@ const MapContainer = (props) => {
 								lng={lng}
 								count={pointCount}
 								nofImages={props.data.mapImages}
-							></MapMarker>
+								handleClickMarker={handleOpenSidePanel}
+							/>
 						);
 					}
 
-					return <MapMarker key={`img-${i}`} lat={lat} lng={lng} />;
+					return (
+						<MapMarker
+							key={`img-${i}`}
+							lat={lat}
+							lng={lng}
+							handleClickMarker={handleOpenSidePanel}
+						/>
+					);
 				})}
 				{props.data.location && props.showCircle && (
 					<SearchArea
@@ -168,7 +144,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapActionsToProps = {
-	setMapImages,
 	setAreaImages,
 	setLocation,
 };

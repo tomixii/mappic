@@ -1,0 +1,13 @@
+.carousel-root {
+  height: 100vh;
+}
+
+.carousel {
+  height: 100%;
+}
+
+.carousel .carousel-status {
+  text-align: center;
+  width: 100%;
+  font-size: 1em;
+}
