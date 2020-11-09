@@ -6,10 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import useSupercluster from 'use-supercluster';
 import { withFirebase } from '../Firebase';
 
-import {
-	setAreaImages,
-	setLocation,
-} from '../../redux/actions/dataActions';
+import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
 
@@ -20,8 +17,8 @@ const useStyles = makeStyles((theme) => ({
 		width: '100%',
 		height: 'calc(100vh - 64px)', // Offset by appbar height
 		[theme.breakpoints.only('xs')]: {
-			height: 'calc(100vh - 56px)' // Offset by appbar height
-		}
+			height: 'calc(100vh - 56px)', // Offset by appbar height
+		},
 	},
 }));
 
@@ -59,11 +56,15 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 
 	const handleOpenSidePanel = (lat, lng) => {
 		props.setLocation({ lat, lng });
+
 		props.setAreaImages(
-			props.data.mapImages.filter(
-				(image) =>
-					getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
-			)
+			props.data.mapImages
+				.map((image) => ({
+					...image,
+					distance: getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng),
+				}))
+				.filter((image) => image.distance < 0.5)
+				.sort((a, b) => a.distance - b.distance)
 		);
 		props.openSidePanel();
 	};
@@ -88,10 +89,6 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 				onClick={(coord) => {
 					const { lat, lng } = coord;
 					handleOpenSidePanel(lat, lng);
-					/*
-					setMarkers([...markers, { lat, lng }]);
-					console.log('marker added at: ', lat, lng);
-					*/
 				}}
 			>
 				{clusters.map((cluster, i) => {
