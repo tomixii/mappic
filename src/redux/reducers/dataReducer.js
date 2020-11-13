@@ -1,9 +1,10 @@
-import { SET_LOCATION, SET_MAP_IMAGES, SET_AREA_IMAGES } from '../types';
+import { SET_LOCATION, SET_MAP_IMAGES, SET_AREA_IMAGES, SET_FOLLOWING_LOCATIONS } from '../types';
 
 const initialState = {
 	location: null,
 	mapImages: [],
 	areaImages: [],
+	followingLocations: [],
 };
 
 export default function (state = initialState, action) {
@@ -24,6 +25,12 @@ export default function (state = initialState, action) {
 			return {
 				...state,
 				areaImages: action.payload.images,
+			};
+		}
+		case SET_FOLLOWING_LOCATIONS: {
+			return {
+				...state,
+				followingLocations: action.payload.locations,
 			};
 		}
 		default:

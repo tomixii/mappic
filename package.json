@@ -5,10 +5,12 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.56",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "axios": "^0.20.0",
+    "clsx": "^1.1.1",
     "firebase": "^7.23.0",
     "google-map-react": "^2.1.7",
     "google-maps-react": "^2.0.6",
@@ -18,10 +20,13 @@
     "react-dropzone": "^11.2.0",
     "react-html5-camera-photo": "^1.5.4",
     "react-redux": "^7.2.1",
+    "react-responsive-carousel": "^3.2.10",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
     "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "supercluster": "^7.1.0",
+    "use-supercluster": "^0.2.9"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import clsx from 'clsx';
 
-import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
@@ -11,31 +10,60 @@ import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery/useMediaQuery';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import CloseIcon from '@material-ui/icons/Close';
-import { makeStyles } from '@material-ui/core/styles';
 import PanoramaIcon from '@material-ui/icons/Panorama';
+import { isMobile } from 'react-device-detect';
 
 import { setLocation } from '../redux/actions/dataActions';
-import { withFirebase } from "./Firebase";
+import { withFirebase } from './Firebase';
 
 const drawerWidth = 400; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
 	drawer: {
-		width: '40%',
-		maxWidth: drawerWidth,
+		width: '100%',
+		[theme.breakpoints.up('md')]: {
+			width: '40%',
+			maxWidth: drawerWidth,
+		},
 		flexShrink: 0,
 	},
 	drawerPaper: {
-		marginTop: '64px', // App bar height
-		width: '40%',
-		maxWidth: drawerWidth,
+		width: '100%',
+		marginTop: '64px',
+		[theme.breakpoints.up('md')]: {
+			width: '40%',
+			maxWidth: drawerWidth,
+		},
+		[theme.breakpoints.only('xs')]: {
+			marginTop: '56px',
+		},
 	},
 	drawerHeader: {
+		height: '33%',
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
-		height: '27%',
 		backgroundColor: '#E5E5E5',
+		[theme.breakpoints.down('xs')]: {
+			height: '33%',
+		},
+		[theme.breakpoints.up('md')]: {
+			height: '30%',
+		},
+	},
+	headerImageContainer: {
+		width: '100%',
+		height: '100%',
+		transition: '0.3s ease',
+		'&:hover': {
+			cursor: 'pointer',
+			opacity: 0.7,
+		},
+		overflow: 'hidden',
+		background: 'black',
 	},
 	placeholderImage: {
 		fontSize: '8rem',
@@ -45,11 +73,32 @@ const useStyles = makeStyles((theme) => ({
 		position: 'absolute',
 		top: 15,
 		right: 12,
+		[theme.breakpoints.down('xs')]: {
+			top: 10,
+			right: 10,
+		},
+		color: 'white',
+		backgroundColor: 'rgba(0, 0, 0, 0.10)',
+		'&:hover': {
+			backgroundColor: 'rgba(0, 0, 0, 0.20)',
+		},
+	},
+	backButton: {
+		position: 'absolute',
+		top: 15,
+		left: 12,
+		[theme.breakpoints.down('xs')]: {
+			top: 10,
+			left: 10,
+		},
 		color: 'white',
 		backgroundColor: 'rgba(0, 0, 0, 0.10)',
 	},
 	drawerSection: {
 		padding: theme.spacing(3),
+		[theme.breakpoints.down('xs')]: {
+			padding: theme.spacing(2, 3),
+		},
 		display: 'flex',
 		flexDirection: 'column',
 		justifyContent: 'center',
@@ -59,21 +108,41 @@ const useStyles = makeStyles((theme) => ({
 		flexDirection: 'row',
 		justifyContent: 'space-around',
 		alignItems: 'center',
+		[theme.breakpoints.up('sm')]: {
+			justifyContent: 'center',
+		},
+		[theme.breakpoints.up('md')]: {
+			justifyContent: 'space-around',
+		},
+	},
+	drawerButton: {
+		[theme.breakpoints.up('sm')]: {
+			margin: theme.spacing(0, 3),
+		},
+		[theme.breakpoints.up('md')]: {
+			margin: 0,
+		},
 	},
 	sectionTitle: {
 		fontSize: '1.1em',
 		fontWeight: 500,
 		marginBottom: theme.spacing(1),
+		[theme.breakpoints.down('xs')]: {
+			fontSize: '1em',
+			marginBottom: theme.spacing(0.5),
+		},
 	},
 	viewMoreButton: {
 		alignSelf: 'center',
 		marginTop: theme.spacing(2),
+		[theme.breakpoints.down('xs')]: {
+			marginTop: theme.spacing(1),
+		},
 	},
 	gridContainer: {
 		display: 'flex',
 		flexWrap: 'wrap',
 		justifyContent: 'space-around',
-		overflow: 'hidden',
 		width: '100%',
 		padding: theme.spacing(1, 0),
 	},
@@ -81,28 +150,40 @@ const useStyles = makeStyles((theme) => ({
 		width: '100%',
 		padding: 0,
 	},
-	avatar: {
-		width: '100%',
-		height: '100%',
+	gridListTile: {
+		transition: '0.3s ease',
+		'&:hover': {
+			cursor: 'pointer',
+			opacity: 0.7,
+		},
+		overflow: 'hidden',
 	},
-	avatarIcon: {
-		fontSize: '2.5em',
+	image: {
+		width: '100%',
+		top: '50%',
+		position: 'relative',
+		transform: 'translateY(-50%)',
 	},
 }));
 
 const SidePanel = (props) => {
 	const classes = useStyles();
-	//const theme = useTheme();
+	const theme = useTheme();
 
-/*
-axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
-        "title": "Firebase",
-        "body": "Firebase is awesome",
-        "click_action": "http://localhost:3000/",
-        "icon": "http://url-to-an-icon/icon.png"
-    },
-    "to": "USER TOKEN"}).then((res)=> consol.log(res)).catch(err => console.log(err))
- */
+	const screenSmall = useMediaQuery(theme.breakpoints.only('sm'));
+	const screenExtraSmall = useMediaQuery(theme.breakpoints.only('xs'));
+
+	const columns = () => {
+		if (screenSmall) {
+			return 4;
+		} else {
+			return 3;
+		}
+	};
+
+	const previewImages = screenSmall
+		? props.data.areaImages.slice(0, 4)
+		: props.data.areaImages.slice(0, 3);
 
 	const askForPermissioToReceiveNotifications = async () => {
 		try {
@@ -110,6 +191,36 @@ axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
 			await messaging.requestPermission();
 			const token = await messaging.getToken();
 			console.log('user token:', token);
+			props.firebase
+				.users()
+				.doc(token)
+				.set(
+					{
+						locations: props.firebase.firestore.FieldValue.arrayUnion(
+							new props.firebase.firestore.GeoPoint(
+								props.data.location.lat,
+								props.data.location.lng
+							)
+						),
+					},
+					{ merge: true }
+				)
+				.then(() => {
+					props.setAlert({
+						severity: 'success',
+						message: 'Location followed successfully!',
+					});
+					props.setOpenSnackbar(true);
+					console.log('Document written with ID: ', token);
+				})
+				.catch((error) => {
+					props.setAlert({
+						severity: 'error',
+						message: 'Could not follow location',
+					});
+					props.setOpenSnackbar(true);
+					console.error('Error adding document: ', error);
+				});
 
 			return token;
 		} catch (error) {
@@ -128,20 +239,50 @@ axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
 		>
 			<Box className={classes.drawerHeader}>
 				{props.data.areaImages.length > 0 ? (
-					<img src={props.data.areaImages[0].imageUrl} alt="thumbnail" />
+					<div
+						className={classes.headerImageContainer}
+						onClick={() => {
+							props.openImageGallery(0);
+						}}
+					>
+						<img
+							className={classes.image}
+							src={props.data.areaImages[0].imageUrl}
+							alt="thumbnail"
+						/>
+					</div>
 				) : (
 					<PanoramaIcon className={classes.placeholderImage} />
 				)}
-				<IconButton className={classes.closeButton} onClick={props.handleClose}>
-					<CloseIcon />
-				</IconButton>
+				{isMobile ? (
+					<IconButton
+						className={classes.backButton}
+						onClick={props.handleClose}
+					>
+						<ArrowBackIcon />
+					</IconButton>
+				) : (
+					<IconButton
+						className={classes.closeButton}
+						onClick={props.handleClose}
+					>
+						<CloseIcon />
+					</IconButton>
+				)}
 			</Box>
 			<Divider />
 			<Box className={classes.drawerSection}>
 				<Typography className={classes.sectionTitle}>
-					{props.locationName}
+					{`There are ${props.data.areaImages.length} image(s) nearby.`}
 				</Typography>
-				<Typography>{props.locationInfo}</Typography>
+				<Typography>
+					{props.data.location &&
+						`${
+							Math.round((props.data.location.lng + Number.EPSILON) * 100) / 100
+						}, ${
+							Math.round((props.data.location.lat + Number.EPSILON) * 100) / 100
+						}`}
+				</Typography>
 			</Box>
 			<Divider />
 			<Box
@@ -149,6 +290,7 @@ axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
 			>
 				<Button
 					className={classes.drawerButton}
+					size={screenExtraSmall ? 'small' : 'medium'}
 					variant="contained"
 					disableElevation
 					color="primary"
@@ -158,31 +300,52 @@ axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
 				</Button>
 				<Button
 					className={classes.drawerButton}
+					size={screenExtraSmall ? 'small' : 'medium'}
 					variant="contained"
 					disableElevation
 					color="primary"
 					onClick={() => askForPermissioToReceiveNotifications()}
 				>
-					Request images
+					Follow location
 				</Button>
 			</Box>
 			<Divider />
 			<Box className={classes.drawerSection}>
 				<Typography className={classes.sectionTitle}>Images</Typography>
-				<Box className={classes.gridContainer}>
-					<GridList cellHeight={120} className={classes.gridList} cols={3}>
-						{props.data.areaImages.map((image, i) => (
-							<GridListTile key={i}>
-								<Avatar className={classes.avatar} variant="square">
-									<img src={image.imageUrl} alt="thumbnail" />
-								</Avatar>
-							</GridListTile>
-						))}
-					</GridList>
-				</Box>
-				<Button className={classes.viewMoreButton} color="primary">
-					View more...
-				</Button>
+				{props.data.areaImages.length > 0 && (
+					<>
+						<Box className={classes.gridContainer}>
+							<GridList
+								cellHeight={screenExtraSmall ? 100 : 120}
+								className={classes.gridList}
+								cols={columns()}
+							>
+								{previewImages.map((image, i) => (
+									<GridListTile
+										className={classes.gridListTile}
+										key={i}
+										onClick={() => props.openImageGallery(i)}
+									>
+										<img src={image.imageUrl} alt="thumbnail" />
+									</GridListTile>
+								))}
+							</GridList>
+						</Box>
+						<Button
+							className={classes.viewMoreButton}
+							color="primary"
+							size={screenExtraSmall ? 'small' : 'medium'}
+							onClick={() => {
+								props.openImageGallery(0);
+							}}
+						>
+							View images
+						</Button>
+					</>
+				)}
+				{props.data.areaImages.length === 0 && (
+					<Typography>No images</Typography>
+				)}
 			</Box>
 		</Drawer>
 	);
@@ -196,4 +359,7 @@ const mapActionsToProps = {
 	setLocation,
 };
 
-export default connect(mapStateToProps, mapActionsToProps)(withFirebase(SidePanel));
+export default connect(
+	mapStateToProps,
+	mapActionsToProps
+)(withFirebase(SidePanel));

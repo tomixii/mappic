@@ -1,32 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 //import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
 import GoogleMapReact, { meters2ScreenPixels } from 'google-map-react';
 import { makeStyles } from '@material-ui/core/styles';
+import useSupercluster from 'use-supercluster';
 import { withFirebase } from '../Firebase';
 
-import {
-	setMapImages,
-	setAreaImages,
-	setLocation,
-} from '../../redux/actions/dataActions';
+import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
-import { Grow } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
 	mapContainer: {
 		width: '100%',
-		height: '100vh',
-		position: 'absolute',
-		top: 0,
-		left: 0,
+		height: 'calc(100vh - 64px)', // Offset by appbar height
+		[theme.breakpoints.only('xs')]: {
+			height: 'calc(100vh - 56px)', // Offset by appbar height
+		},
 	},
 }));
 
-const MapContainer = (props) => {
+const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 	const classes = useStyles();
 
 	//const [markers, setMarkers] = React.useState([]);
@@ -40,26 +36,37 @@ const MapContainer = (props) => {
 			west: map.getBounds().Sa.i,
 		});
 	};
+	useEffect(() => {
+		if (bounds.north) fetchImagesInBounds(bounds);
+	}, [bounds]);
 
-	const fetchImagesInBounds = (bounds) => {
-		const images = [];
-		props.firebase
-			.pictures()
-			.where('lat', '<', bounds.north)
-			.where('lat', '>', bounds.south)
-			.get()
-			.then((data) => {
-				data.forEach((doc) => {
-					if (doc.data().lng > bounds.west && doc.data().lng < bounds.east) {
-						images.push(doc.data());
-					}
-				});
-			})
-			.then(() => {
-				console.log(images);
-				props.setMapImages(images);
-				console.log(`Saved ${images.length} image(s) to redux`);
-			});
+	const { clusters, supercluster } = useSupercluster({
+		points: props.data.mapImages.map((img) => ({
+			type: 'Feature',
+			properties: { cluster: false, ...img },
+			geometry: {
+				type: 'Point',
+				coordinates: [parseFloat(img.lng), parseFloat(img.lat)],
+			},
+		})),
+		bounds: [bounds.west, bounds.south, bounds.east, bounds.north],
+		zoom: currentZoom,
+		options: { radius: 75, maxZoom: 20 },
+	});
+
+	const handleOpenSidePanel = (lat, lng) => {
+		props.setLocation({ lat, lng });
+
+		props.setAreaImages(
+			props.data.mapImages
+				.map((image) => ({
+					...image,
+					distance: getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng),
+				}))
+				.filter((image) => image.distance < 0.5)
+				.sort((a, b) => a.distance - b.distance)
+		);
+		props.openSidePanel();
 	};
 
 	return (
@@ -72,7 +79,7 @@ const MapContainer = (props) => {
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 				onChange={(event) => {
 					setCurrentZoom(event.zoom);
-					fetchImagesInBounds({
+					props.setBounds({
 						north: event.bounds.ne.lat,
 						east: event.bounds.ne.lng,
 						south: event.bounds.sw.lat,
@@ -81,24 +88,38 @@ const MapContainer = (props) => {
 				}}
 				onClick={(coord) => {
 					const { lat, lng } = coord;
-					props.setLocation({ lat, lng });
-
-					props.setAreaImages(
-						props.data.mapImages.filter(
-							(image) =>
-								getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
-						)
-					);
-					props.openSidePanel();
-					/*
-					setMarkers([...markers, { lat, lng }]);
-					console.log('marker added at: ', lat, lng);
-					*/
+					handleOpenSidePanel(lat, lng);
 				}}
 			>
-				{props.data.mapImages.map((marker, i) => (
-					<MapMarker lat={marker.lat} lng={marker.lng} key={i} />
-				))}
+				{clusters.map((cluster, i) => {
+					const [lng, lat] = cluster.geometry.coordinates;
+					const {
+						cluster: isCluster,
+						point_count: pointCount,
+					} = cluster.properties;
+
+					if (isCluster) {
+						return (
+							<MapMarker
+								key={`cluster-${cluster.id}`}
+								lat={lat}
+								lng={lng}
+								count={pointCount}
+								nofImages={props.data.mapImages}
+								handleClickMarker={handleOpenSidePanel}
+							/>
+						);
+					}
+
+					return (
+						<MapMarker
+							key={`img-${i}`}
+							lat={lat}
+							lng={lng}
+							handleClickMarker={handleOpenSidePanel}
+						/>
+					);
+				})}
 				{props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}
@@ -111,8 +132,29 @@ const MapContainer = (props) => {
 							},
 							currentZoom
 						)}
+						color={'#B1DFFB'}
 					/>
 				)}
+				{props.data.followingLocations &&
+					props.data.followingLocations.map((location) => {
+						console.log("location", location);
+						return (
+							<SearchArea
+								lat={location.latitude}
+								lng={location.longitude}
+								pixels={meters2ScreenPixels(
+									1000,
+									{
+										lat: location.latitude,
+										lng: location.longitude,
+									},
+									currentZoom
+								)}
+								color={'green'}
+							/>
+						)
+					})
+				}
 			</GoogleMapReact>
 		</div>
 	);
@@ -123,7 +165,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapActionsToProps = {
-	setMapImages,
 	setAreaImages,
 	setLocation,
 };
