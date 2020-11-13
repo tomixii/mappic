@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import GridList from '@material-ui/core/GridList';
@@ -17,6 +18,8 @@ import { BrowserView, MobileView } from 'react-device-detect';
 import CloseIcon from '@material-ui/icons/Close';
 import VerticalAlignTopIcon from '@material-ui/icons/VerticalAlignTop';
 
+import { getDistanceFromLatLonInKm } from '../utils';
+
 const useStyles = makeStyles((theme) => ({
 	footerButton: {
 		marginRight: theme.spacing(0.5),
@@ -29,13 +32,13 @@ const useStyles = makeStyles((theme) => ({
 		padding: theme.spacing(4),
 		margin: theme.spacing(3, 0),
 		border: '3px dashed #E5E5E5',
-		"&:focus": {
+		'&:focus': {
 			outline: 'none',
-			border: '3px dashed #BDBDBD'
+			border: '3px dashed #BDBDBD',
 		},
 		[theme.breakpoints.down('sm')]: {
 			padding: theme.spacing(2),
-		}
+		},
 	},
 	uploadIcon: {
 		fontSize: '3.5rem',
@@ -53,11 +56,11 @@ const useStyles = makeStyles((theme) => ({
 		margin: theme.spacing(3, 0, 0, 0),
 	},
 	gridList: {
-		width: '100%'
+		width: '100%',
 	},
 	image: {
-		objectFit: 'cover'
-	}
+		objectFit: 'cover',
+	},
 }));
 
 const styles = (theme) => ({
@@ -147,11 +150,7 @@ const AddImageModal = (props) => {
 
 	const thumbs = files.map((file) => (
 		<GridListTile key={file.name} cols={1}>
-				<img
-					className={classes.image}
-					src={file.preview}
-					alt={file.name}
-				/>
+			<img className={classes.image} src={file.preview} alt={file.name} />
 		</GridListTile>
 	));
 
@@ -159,6 +158,55 @@ const AddImageModal = (props) => {
 		// Make sure to revoke the data uris to avoid memory leaks
 		files.forEach((file) => URL.revokeObjectURL(file.preview));
 	}, [files]);
+
+	const sendNotifications = () => {
+		const users = [];
+		props.firebase
+			.users()
+			.get()
+			.then((data) => {
+				data.forEach((doc) => {
+					doc.data().locations.forEach((loc) => {
+						if (
+							getDistanceFromLatLonInKm(
+								props.data.location.lat,
+								props.data.location.lng,
+								loc.latitude,
+								loc.longitude
+							) < 0.5
+						) {
+							console.log(loc.latitude, loc.longitude);
+							const to = doc.id;
+							const notification = {
+								title: 'Checkout new image!',
+								body: `Image added near your followed location: ${loc.latitude},${loc.longitude}`,
+								icon: 'logo192.png',
+								click_action: 'http://localhost:5000',
+							};
+							console.log('to: ', to);
+							fetch('https://fcm.googleapis.com/fcm/send', {
+								method: 'POST',
+								headers: {
+									Authorization:
+										'key=' + process.env.REACT_APP_MESSAGE_SERVER_KEY,
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({
+									notification: notification,
+									to: to,
+								}),
+							})
+								.then(function (response) {
+									console.log(response);
+								})
+								.catch(function (error) {
+									console.error(error);
+								});
+						}
+					});
+				});
+			});
+	};
 
 	return (
 		<Dialog fullWidth maxWidth={'md'} fullScreen={fullScreen} open={props.open}>
@@ -182,13 +230,17 @@ const AddImageModal = (props) => {
 							Choose an image or drag and drop it here
 						</Typography>
 					</div>
-					{thumbs &&
+					{thumbs && (
 						<div className={classes.gridListContainer}>
-							<GridList cellHeight={145} className={classes.gridList} cols={columns()}>
+							<GridList
+								cellHeight={145}
+								className={classes.gridList}
+								cols={columns()}
+							>
 								{thumbs}
 							</GridList>
 						</div>
-					}
+					)}
 				</BrowserView>
 				<MobileView>
 					<Button
@@ -198,13 +250,17 @@ const AddImageModal = (props) => {
 						Choose image
 					</Button>
 					<input {...getInputProps()} />
-					{thumbs &&
-					<div className={classes.gridListContainer}>
-						<GridList cellHeight={145} className={classes.gridList} cols={columns()}>
-							{thumbs}
-						</GridList>
-					</div>
-					}
+					{thumbs && (
+						<div className={classes.gridListContainer}>
+							<GridList
+								cellHeight={145}
+								className={classes.gridList}
+								cols={columns()}
+							>
+								{thumbs}
+							</GridList>
+						</div>
+					)}
 				</MobileView>
 			</DialogContent>
 
@@ -215,7 +271,8 @@ const AddImageModal = (props) => {
 					color="primary"
 					className={classes.footerButton}
 					onClick={() => {
-						props.handlePictures(files);
+						//props.handlePictures(files);
+						sendNotifications();
 						setFiles([]);
 						/* TODO: Tell to users that "pictures(s) added successfully" */
 						props.handleClose();
@@ -237,4 +294,8 @@ const AddImageModal = (props) => {
 	);
 };
 
-export default withFirebase(AddImageModal);
+const mapStateToProps = (state) => ({
+	data: state.data,
+});
+
+export default connect(mapStateToProps, null)(withFirebase(AddImageModal));
