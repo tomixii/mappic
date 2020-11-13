@@ -1,7 +1,7 @@
 import { SET_LOCATION, SET_MAP_IMAGES, SET_AREA_IMAGES, SET_FOLLOWING_LOCATIONS } from '../types';
 
 const initialState = {
-	location: null,
+	location: undefined,
 	mapImages: [],
 	areaImages: [],
 	followingLocations: [],

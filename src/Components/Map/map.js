@@ -9,6 +9,7 @@ import { withFirebase } from '../Firebase';
 import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
+import FollowedArea from './FollowedArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
 
@@ -87,8 +88,10 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 					});
 				}}
 				onClick={(coord) => {
-					const { lat, lng } = coord;
-					handleOpenSidePanel(lat, lng);
+					if (props.data.followingLocations.length === 0) {
+						const { lat, lng } = coord;
+						handleOpenSidePanel(lat, lng);
+					}
 				}}
 			>
 				{clusters.map((cluster, i) => {
@@ -120,7 +123,7 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 						/>
 					);
 				})}
-				{props.data.location && props.showCircle && (
+				{props.data.followingLocations.length === 0 && props.data.location && props.showCircle && (
 					<SearchArea
 						lat={props.data.location.lat}
 						lng={props.data.location.lng}
@@ -139,7 +142,7 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 					props.data.followingLocations.map((location) => {
 						console.log("location", location);
 						return (
-							<SearchArea
+							<FollowedArea
 								lat={location.latitude}
 								lng={location.longitude}
 								pixels={meters2ScreenPixels(
@@ -151,6 +154,7 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 									currentZoom
 								)}
 								color={'green'}
+								openSidePanel={handleOpenSidePanel}
 							/>
 						)
 					})

@@ -34,7 +34,7 @@ const Header = (props) => {
 				<Button
 					color="inherit"
 					onClick={() => {
-						if (!showFollowedLocation) {
+						if (props.data.followingLocations.length === 0) {
 							props.firebase.messaging
 								.getToken({
 									vapidKey:
@@ -64,18 +64,22 @@ const Header = (props) => {
 						setShowFollowedLocation(!showFollowedLocation);
 					}}
 				>
-					{!showFollowedLocation ? 'followed locations' : 'Close followed locations'}
+					{props.data.followingLocations.length > 0  ?  'Close followed locations': 'followed locations'}
 				</Button>
 			</Toolbar>
 		</AppBar>
 	);
 };
 
+const mapStateToProps = (state) => ({
+	data: state.data,
+});
+
 const mapActionsToProps = {
 	setFollowingLocations,
 };
 
 export default connect(
-	null,
+	mapStateToProps,
 	mapActionsToProps
 )(withFirebase(Header));

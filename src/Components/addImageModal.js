@@ -175,7 +175,6 @@ const AddImageModal = (props) => {
 								loc.longitude
 							) < 0.5
 						) {
-							console.log(loc.latitude, loc.longitude);
 							const to = doc.id;
 							const notification = {
 								title: 'Checkout new image!',
@@ -183,7 +182,6 @@ const AddImageModal = (props) => {
 								icon: 'logo192.png',
 								click_action: 'http://localhost:5000',
 							};
-							console.log('to: ', to);
 							fetch('https://fcm.googleapis.com/fcm/send', {
 								method: 'POST',
 								headers: {

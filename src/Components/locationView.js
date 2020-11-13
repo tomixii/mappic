@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { connect } from 'react-redux';
 import clsx from 'clsx';
 
@@ -17,7 +17,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import { isMobile } from 'react-device-detect';
 
-import { setLocation } from '../redux/actions/dataActions';
+import { setLocation, setFollowingLocations } from '../redux/actions/dataActions';
 import { withFirebase } from './Firebase';
 
 const drawerWidth = 400; // TODO something not fixed?
@@ -170,6 +170,8 @@ const SidePanel = (props) => {
 	const classes = useStyles();
 	const theme = useTheme();
 
+	const [loading, setLoading] = React.useState(false);
+
 	const screenSmall = useMediaQuery(theme.breakpoints.only('sm'));
 	const screenExtraSmall = useMediaQuery(theme.breakpoints.only('xs'));
 
@@ -190,7 +192,6 @@ const SidePanel = (props) => {
 			const messaging = props.firebase.messaging;
 			await messaging.requestPermission();
 			const token = await messaging.getToken();
-			console.log('user token:', token);
 			props.firebase
 				.users()
 				.doc(token)
@@ -226,6 +227,64 @@ const SidePanel = (props) => {
 		} catch (error) {
 			console.error(error);
 		}
+	};
+
+	const removeFollowedLocation = async () => {
+		try {
+			const messaging = props.firebase.messaging;
+			await messaging.requestPermission();
+			const token = await messaging.getToken();
+			let newLocations = [];
+			setLoading(true)
+			props.firebase.users().doc(token).get().then((doc) => {
+
+				if (doc.exists) {
+					newLocations = doc.data().locations.filter((x) => x.longitude !== props.data.location.lng && x.latitude !== props.data.location.lat);
+					console.log('Document data:', doc.data());
+				} else {
+					// doc.data() will be undefined in this case
+					console.log('No such document!');
+				}
+			}).then(() => {
+				props.firebase
+					.users()
+					.doc(token)
+					.set(
+						{
+							locations: newLocations,
+
+						},
+						{ merge: true }
+					)
+					.then(() => {
+						props.setFollowingLocations(newLocations);
+						setLoading(false)
+						props.setAlert({
+							severity: 'success',
+							message: 'Location followed successfully!',
+						});
+						props.setOpenSnackbar(true);
+						console.log('Document written with ID: ', token);
+					})
+					.catch((error) => {
+						props.setAlert({
+							severity: 'error',
+							message: 'Could not follow location',
+						});
+						props.setOpenSnackbar(true);
+						console.error('Error adding document: ', error);
+					});
+			});
+
+			return token;
+		} catch (error) {
+			console.error(error);
+		}
+
+	};
+
+	const isFollowedLocation = () => {
+		return props.data.location && props.data.followingLocations.filter(loc => loc.latitude === props.data.location.lat && loc.longitude === props.data.location.lng).length > 0;
 	};
 	return (
 		<Drawer
@@ -304,9 +363,16 @@ const SidePanel = (props) => {
 					variant="contained"
 					disableElevation
 					color="primary"
-					onClick={() => askForPermissioToReceiveNotifications()}
+					onClick={() => {
+						if (isFollowedLocation()){
+							removeFollowedLocation()
+						} else {
+							askForPermissioToReceiveNotifications()
+						}
+					}}
 				>
-					Follow location
+
+					{!loading ? isFollowedLocation() ? 'Unfollow location' : 'Follow location': 'loading...'}
 				</Button>
 			</Box>
 			<Divider />
@@ -357,6 +423,7 @@ const mapStateToProps = (state) => ({
 
 const mapActionsToProps = {
 	setLocation,
+	setFollowingLocations,
 };
 
 export default connect(
