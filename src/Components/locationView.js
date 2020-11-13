@@ -204,7 +204,7 @@ axios.post("https://fcm.googleapis.com/fcm/send", {"notification": {
 		} catch (error) {
 			console.error(error);
 		}
-	}
+	};
 	return (
 		<Drawer
 			className={classes.drawer}

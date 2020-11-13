@@ -23,7 +23,17 @@ class Firebase {
         this.auth = app.auth();
         this.db = app.firestore();
         this.storage = app.storage()
-        this.messaging = app.messaging()
+        if (app.messaging.isSupported()){
+            this.messaging = app.messaging()
+            this.messaging.onMessage((payload) => {
+                console.log('Message received. ', payload);
+                // [START_EXCLUDE]
+                // Update the UI to include the received message.
+                // [END_EXCLUDE]
+            });
+        } else {
+            console.log("messaging is not supported")
+        }
         // If you want your app to work offline and load faster, you can change
         // unregister() to register() below. Note this comes with some pitfalls.
         // Learn more about service workers: https://bit.ly/CRA-PWA
