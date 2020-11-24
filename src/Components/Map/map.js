@@ -31,9 +31,9 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
-			north: map.getBounds().Ya.j,
+			north: map.getBounds().Wa.j,
 			east: map.getBounds().Sa.j,
-			south: map.getBounds().Ya.i,
+			south: map.getBounds().Wa.i,
 			west: map.getBounds().Sa.i,
 		});
 	};
@@ -123,24 +123,26 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 						/>
 					);
 				})}
-				{props.data.followingLocations.length === 0 && props.data.location && props.showCircle && (
-					<SearchArea
-						lat={props.data.location.lat}
-						lng={props.data.location.lng}
-						pixels={meters2ScreenPixels(
-							1000,
-							{
-								lat: props.data.location.lat,
-								lng: props.data.location.lng,
-							},
-							currentZoom
-						)}
-						color={'#B1DFFB'}
-					/>
-				)}
+				{props.data.followingLocations.length === 0 &&
+					props.data.location &&
+					props.showCircle && (
+						<SearchArea
+							lat={props.data.location.lat}
+							lng={props.data.location.lng}
+							pixels={meters2ScreenPixels(
+								1000,
+								{
+									lat: props.data.location.lat,
+									lng: props.data.location.lng,
+								},
+								currentZoom
+							)}
+							color={'#B1DFFB'}
+						/>
+					)}
 				{props.data.followingLocations &&
 					props.data.followingLocations.map((location) => {
-						console.log("location", location);
+						console.log('location', location);
 						return (
 							<FollowedArea
 								lat={location.latitude}
@@ -156,9 +158,8 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 								color={'green'}
 								openSidePanel={handleOpenSidePanel}
 							/>
-						)
-					})
-				}
+						);
+					})}
 			</GoogleMapReact>
 		</div>
 	);
