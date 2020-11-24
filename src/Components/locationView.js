@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { connect } from 'react-redux';
 import clsx from 'clsx';
 
@@ -17,7 +17,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import { isMobile } from 'react-device-detect';
 
-const drawerWidth = 600; // TODO something not fixed?
+import { setLocation, setFollowingLocations } from '../redux/actions/dataActions';
+import { withFirebase } from './Firebase';
+
+const drawerWidth = 400; // TODO something not fixed?
 const useStyles = makeStyles((theme) => ({
 	drawer: {
 		width: '100%',
@@ -36,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
 		},
 		[theme.breakpoints.only('xs')]: {
 			marginTop: '56px',
-		}
+		},
 	},
 	drawerHeader: {
 		height: '33%',
@@ -48,8 +51,8 @@ const useStyles = makeStyles((theme) => ({
 			height: '33%',
 		},
 		[theme.breakpoints.up('md')]: {
-			height: '30%'
-		}
+			height: '30%',
+		},
 	},
 	headerImageContainer: {
 		width: '100%',
@@ -57,10 +60,10 @@ const useStyles = makeStyles((theme) => ({
 		transition: '0.3s ease',
 		'&:hover': {
 			cursor: 'pointer',
-			opacity: 0.7
+			opacity: 0.7,
 		},
 		overflow: 'hidden',
-		background: 'black'
+		background: 'black',
 	},
 	placeholderImage: {
 		fontSize: '8rem',
@@ -78,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
 		backgroundColor: 'rgba(0, 0, 0, 0.10)',
 		'&:hover': {
 			backgroundColor: 'rgba(0, 0, 0, 0.20)',
-		}
+		},
 	},
 	backButton: {
 		position: 'absolute',
@@ -94,7 +97,7 @@ const useStyles = makeStyles((theme) => ({
 	drawerSection: {
 		padding: theme.spacing(3),
 		[theme.breakpoints.down('xs')]: {
-			padding: theme.spacing(2, 3)
+			padding: theme.spacing(2, 3),
 		},
 		display: 'flex',
 		flexDirection: 'column',
@@ -106,19 +109,19 @@ const useStyles = makeStyles((theme) => ({
 		justifyContent: 'space-around',
 		alignItems: 'center',
 		[theme.breakpoints.up('sm')]: {
-			justifyContent: 'center'
+			justifyContent: 'center',
 		},
 		[theme.breakpoints.up('md')]: {
 			justifyContent: 'space-around',
-		}
+		},
 	},
 	drawerButton: {
 		[theme.breakpoints.up('sm')]: {
-			margin: theme.spacing(0, 3)
+			margin: theme.spacing(0, 3),
 		},
 		[theme.breakpoints.up('md')]: {
-			margin: 0
-		}
+			margin: 0,
+		},
 	},
 	sectionTitle: {
 		fontSize: '1.1em',
@@ -151,21 +154,23 @@ const useStyles = makeStyles((theme) => ({
 		transition: '0.3s ease',
 		'&:hover': {
 			cursor: 'pointer',
-			opacity: 0.7
+			opacity: 0.7,
 		},
-		overflow: 'hidden'
+		overflow: 'hidden',
 	},
 	image: {
 		width: '100%',
 		top: '50%',
 		position: 'relative',
-		transform:  'translateY(-50%)'
-	}
+		transform: 'translateY(-50%)',
+	},
 }));
 
 const SidePanel = (props) => {
 	const classes = useStyles();
 	const theme = useTheme();
+
+	const [loading, setLoading] = React.useState(false);
 
 	const screenSmall = useMediaQuery(theme.breakpoints.only('sm'));
 	const screenExtraSmall = useMediaQuery(theme.breakpoints.only('xs'));
@@ -178,42 +183,151 @@ const SidePanel = (props) => {
 		}
 	};
 
-	const previewImages = screenSmall ? props.data.areaImages.slice(0, 4) :props.data.areaImages.slice(0, 3);
+	const previewImages = screenSmall
+		? props.data.areaImages.slice(0, 4)
+		: props.data.areaImages.slice(0, 3);
 
+	const askForPermissioToReceiveNotifications = async () => {
+		try {
+			const messaging = props.firebase.messaging;
+			await messaging.requestPermission();
+			const token = await messaging.getToken();
+			props.firebase
+				.users()
+				.doc(token)
+				.set(
+					{
+						locations: props.firebase.firestore.FieldValue.arrayUnion(
+							new props.firebase.firestore.GeoPoint(
+								props.data.location.lat,
+								props.data.location.lng
+							)
+						),
+					},
+					{ merge: true }
+				)
+				.then(() => {
+					props.setAlert({
+						severity: 'success',
+						message: 'Location followed successfully!',
+					});
+					props.setOpenSnackbar(true);
+					console.log('Document written with ID: ', token);
+				})
+				.catch((error) => {
+					props.setAlert({
+						severity: 'error',
+						message: 'Could not follow location',
+					});
+					props.setOpenSnackbar(true);
+					console.error('Error adding document: ', error);
+				});
+
+			return token;
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const removeFollowedLocation = async () => {
+		try {
+			const messaging = props.firebase.messaging;
+			await messaging.requestPermission();
+			const token = await messaging.getToken();
+			let newLocations = [];
+			setLoading(true)
+			props.firebase.users().doc(token).get().then((doc) => {
+
+				if (doc.exists) {
+					newLocations = doc.data().locations.filter((x) => x.longitude !== props.data.location.lng && x.latitude !== props.data.location.lat);
+					console.log('Document data:', doc.data());
+				} else {
+					// doc.data() will be undefined in this case
+					console.log('No such document!');
+				}
+			}).then(() => {
+				props.firebase
+					.users()
+					.doc(token)
+					.set(
+						{
+							locations: newLocations,
+
+						},
+						{ merge: true }
+					)
+					.then(() => {
+						props.setFollowingLocations(newLocations);
+						setLoading(false)
+						props.setAlert({
+							severity: 'success',
+							message: 'Location followed successfully!',
+						});
+						props.setOpenSnackbar(true);
+						console.log('Document written with ID: ', token);
+					})
+					.catch((error) => {
+						props.setAlert({
+							severity: 'error',
+							message: 'Could not follow location',
+						});
+						props.setOpenSnackbar(true);
+						console.error('Error adding document: ', error);
+					});
+			});
+
+			return token;
+		} catch (error) {
+			console.error(error);
+		}
+
+	};
+
+	const isFollowedLocation = () => {
+		return props.data.location && props.data.followingLocations.filter(loc => loc.latitude === props.data.location.lat && loc.longitude === props.data.location.lng).length > 0;
+	};
 	return (
 		<Drawer
 			className={classes.drawer}
-			variant='persistent'
-			anchor='left'
+			variant="persistent"
+			anchor="left"
 			open={props.open}
 			classes={{
 				paper: classes.drawerPaper,
 			}}
 		>
-			<Box
-				className={classes.drawerHeader}
-			>
+			<Box className={classes.drawerHeader}>
 				{props.data.areaImages.length > 0 ? (
-					<div className={classes.headerImageContainer} onClick={() => { props.openImageGallery(0) }}>
+					<div
+						className={classes.headerImageContainer}
+						onClick={() => {
+							props.openImageGallery(0);
+						}}
+					>
 						<img
 							className={classes.image}
 							src={props.data.areaImages[0].imageUrl}
-							alt='thumbnail'
+							alt="thumbnail"
 						/>
 					</div>
 				) : (
 					<PanoramaIcon className={classes.placeholderImage} />
 				)}
-				{
-					isMobile ?
-						<IconButton className={classes.backButton} onClick={props.handleClose}>
-							<ArrowBackIcon />
-						</IconButton>
-						:
-						<IconButton className={classes.closeButton} onClick={props.handleClose}>
-							<CloseIcon />
-						</IconButton>
-				}
+				{isMobile ? (
+					<IconButton
+						className={classes.backButton}
+						onClick={props.handleClose}
+					>
+						<ArrowBackIcon />
+					</IconButton>
+				) : (
+					<IconButton
+						className={classes.closeButton}
+						onClick={props.handleClose}
+					>
+						<CloseIcon />
+					</IconButton>
+				)}
 			</Box>
 			<Divider />
 			<Box className={classes.drawerSection}>
@@ -236,9 +350,9 @@ const SidePanel = (props) => {
 				<Button
 					className={classes.drawerButton}
 					size={screenExtraSmall ? 'small' : 'medium'}
-					variant='contained'
+					variant="contained"
 					disableElevation
-					color='primary'
+					color="primary"
 					onClick={props.openAddImageModal}
 				>
 					Add image
@@ -246,52 +360,58 @@ const SidePanel = (props) => {
 				<Button
 					className={classes.drawerButton}
 					size={screenExtraSmall ? 'small' : 'medium'}
-					variant='contained'
+					variant="contained"
 					disableElevation
-					color='primary'
+					color="primary"
 					onClick={() => {
-						// TODO
+						if (isFollowedLocation()){
+							removeFollowedLocation()
+						} else {
+							askForPermissioToReceiveNotifications()
+						}
 					}}
 				>
-					Request images
+
+					{!loading ? isFollowedLocation() ? 'Unfollow location' : 'Follow location': 'loading...'}
 				</Button>
 			</Box>
 			<Divider />
 			<Box className={classes.drawerSection}>
 				<Typography className={classes.sectionTitle}>Images</Typography>
-				{
-					props.data.areaImages.length > 0 &&
+				{props.data.areaImages.length > 0 && (
 					<>
 						<Box className={classes.gridContainer}>
-							<GridList cellHeight={screenExtraSmall ? 100 : 120} className={classes.gridList} cols={columns()}>
+							<GridList
+								cellHeight={screenExtraSmall ? 100 : 120}
+								className={classes.gridList}
+								cols={columns()}
+							>
 								{previewImages.map((image, i) => (
 									<GridListTile
 										className={classes.gridListTile}
 										key={i}
 										onClick={() => props.openImageGallery(i)}
 									>
-										<img
-											src={image.imageUrl}
-											alt='thumbnail'
-										/>
+										<img src={image.imageUrl} alt="thumbnail" />
 									</GridListTile>
 								))}
 							</GridList>
 						</Box>
 						<Button
 							className={classes.viewMoreButton}
-							color='primary'
+							color="primary"
 							size={screenExtraSmall ? 'small' : 'medium'}
-							onClick={() => {props.openImageGallery(0)}}
+							onClick={() => {
+								props.openImageGallery(0);
+							}}
 						>
 							View images
 						</Button>
 					</>
-				}
-				{
-					props.data.areaImages.length === 0 &&
-						<Typography>No images</Typography>
-				}
+				)}
+				{props.data.areaImages.length === 0 && (
+					<Typography>No images</Typography>
+				)}
 			</Box>
 		</Drawer>
 	);
@@ -301,4 +421,12 @@ const mapStateToProps = (state) => ({
 	data: state.data,
 });
 
-export default connect(mapStateToProps, null)(SidePanel);
+const mapActionsToProps = {
+	setLocation,
+	setFollowingLocations,
+};
+
+export default connect(
+	mapStateToProps,
+	mapActionsToProps
+)(withFirebase(SidePanel));

@@ -1,8 +1,9 @@
 import React from 'react';
 
-const SearchArea = (props) => {
+const FollowedArea = (props) => {
 	return (
 		<div
+			onClick={() => props.openSidePanel(props.lat,props.lng)}
 			style={{
 				position: 'absolute',
 				transform: 'translate(-50%, -50%)',
@@ -10,7 +11,7 @@ const SearchArea = (props) => {
 				width: props.pixels.w,
 				height: props.pixels.h,
 				borderWidth: 3,
-				borderColor: '#186fd6',
+				borderColor: props.color,
 				borderStyle: 'solid',
 				borderRadius: props.pixels.w * 3,
 				backgroundColor: props.color,
@@ -18,4 +19,4 @@ const SearchArea = (props) => {
 		/>
 	);
 };
-export default SearchArea;
+export default FollowedArea;

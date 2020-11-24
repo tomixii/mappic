@@ -1,4 +1,4 @@
-import { SET_LOCATION, SET_MAP_IMAGES, SET_AREA_IMAGES } from '../types';
+import { SET_LOCATION, SET_MAP_IMAGES, SET_AREA_IMAGES, SET_FOLLOWING_LOCATIONS } from '../types';
 
 export const setLocation = (location) => (dispatch) => {
 	dispatch({
@@ -22,6 +22,14 @@ export const setAreaImages = (images) => (dispatch) => {
 		type: SET_AREA_IMAGES,
 		payload: {
 			images,
+		},
+	});
+};
+export const setFollowingLocations = (locations) => (dispatch) => {
+	dispatch({
+		type: SET_FOLLOWING_LOCATIONS,
+		payload: {
+			locations,
 		},
 	});
 };

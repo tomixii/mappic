@@ -13,7 +13,11 @@ import ImageGallery from './ImageGallery';
 import Map from './Map/map';
 import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
-import { setAreaImages, setMapImages, setLocation } from '../redux/actions/dataActions';
+import {
+	setAreaImages,
+	setMapImages,
+	setLocation,
+} from '../redux/actions/dataActions';
 import { getDistanceFromLatLonInKm } from '../utils';
 
 const drawerWidth = 450;
@@ -30,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 		maxWidth: 'none',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'center'
+		justifyContent: 'center',
 	},
 	content: {
 		display: 'flex',
@@ -47,16 +51,16 @@ const useStyles = makeStyles((theme) => ({
 		// TODO can button be centered?
 	},
 	snackbar: {
-		top: 74,	// 64 (Appbar height) + 10
-		[theme.breakpoints.only("xs")]: {
-			top: 66	// 56 (Appbar height) + 10
-		}
-	}
+		top: 74, // 64 (Appbar height) + 10
+		[theme.breakpoints.only('xs')]: {
+			top: 66, // 56 (Appbar height) + 10
+		},
+	},
 }));
 
 const Main = (props) => {
 	const classes = useStyles();
-	const [alert, setAlert] = React.useState({severity: "", message: ""});
+	const [alert, setAlert] = React.useState({ severity: '', message: '' });
 	const [openSnackbar, setOpenSnackbar] = React.useState(false);
 	const [openModal, setOpenModal] = React.useState(false);
 	const [openSidePanel, setOpenSidePanel] = React.useState(false);
@@ -100,8 +104,8 @@ const Main = (props) => {
 	const handlePictures = (files) => {
 		files.forEach((file) => {
 			const imageExtension = file.path.split('.')[
-			file.path.split('.').length - 1
-				];
+				file.path.split('.').length - 1
+			];
 			//234124124.png
 			const imageFileName = `${Math.round(
 				Math.random() * 100000000
@@ -126,18 +130,30 @@ const Main = (props) => {
 							fetchImagesInBounds(bounds).then((images) => {
 								props.setAreaImages(
 									images.filter(
-										(image) => getDistanceFromLatLonInKm(image.lat, image.lng, lat, lng) < 0.5
+										(image) =>
+											getDistanceFromLatLonInKm(
+												image.lat,
+												image.lng,
+												lat,
+												lng
+											) < 0.5
 									)
-								)
+								);
 							});
-							const message = files.length > 1 ? "Images uploaded successfully!" : "Image uploaded successfully!";
-							setAlert({ severity: "success", message: message });
+							const message =
+								files.length > 1
+									? 'Images uploaded successfully!'
+									: 'Image uploaded successfully!';
+							setAlert({ severity: 'success', message: message });
 							setOpenSnackbar(true);
 							console.log('Document written with ID: ', docRef.id);
 						})
 						.catch(function (error) {
-							const message = files.length > 1 ? "Could not upload images" : "Could not upload image";
-							setAlert({ severity: "error", message: message });
+							const message =
+								files.length > 1
+									? 'Could not upload images'
+									: 'Could not upload image';
+							setAlert({ severity: 'error', message: message });
 							setOpenSnackbar(true);
 							console.error('Error adding document: ', error);
 						});
@@ -175,16 +191,20 @@ const Main = (props) => {
 				handleClose={handleCloseSidePanel}
 				openAddImageModal={() => handleClickOpenModal()}
 				openImageGallery={handleOpenImageGallery}
+				setAlert={setAlert}
+				setOpenSnackbar={setOpenSnackbar}
 			/>
 			<AddImageModal
 				open={openModal}
 				handleClose={handleCloseModal}
 				handlePictures={handlePictures}
 			/>
-			<ImageGallery selectedItem={selectedImageIndex} open={openImageGallery} handleClose={handleCloseImageGallery} />
-			<main
-				className={classes.content}
-			>
+			<ImageGallery
+				selectedItem={selectedImageIndex}
+				open={openImageGallery}
+				handleClose={handleCloseImageGallery}
+			/>
+			<main className={classes.content}>
 				<Map
 					bounds={bounds}
 					setBounds={setBounds}
@@ -217,20 +237,22 @@ const Main = (props) => {
 				</Box>
 			</main>
 			<Snackbar
-				anchorOrigin={{ vertical: "top", horizontal: "center" }}
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
 				open={openSnackbar}
 				autoHideDuration={6000}
 				onClose={handleCloseSnackbar}
 				className={classes.snackbar}
 			>
-				<Alert severity={alert.severity} onClose={handleCloseSnackbar}>{alert.message}</Alert>
+				<Alert severity={alert.severity} onClose={handleCloseSnackbar}>
+					{alert.message}
+				</Alert>
 			</Snackbar>
 		</Container>
 	);
 };
 
 const mapStateToProps = (state) => ({
-	data: state.data
+	data: state.data,
 });
 
 const mapActionsToProps = {

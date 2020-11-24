@@ -9,6 +9,7 @@ import { withFirebase } from '../Firebase';
 import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import MapMarker from './MapMarker';
 import SearchArea from './SearchArea';
+import FollowedArea from './FollowedArea';
 
 import { getDistanceFromLatLonInKm } from '../../utils';
 
@@ -30,15 +31,15 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 
 	const handleApiLoaded = (map, maps) => {
 		fetchImagesInBounds({
-			north: map.getBounds().Ya.j,
+			north: map.getBounds().Wa.j,
 			east: map.getBounds().Sa.j,
-			south: map.getBounds().Ya.i,
+			south: map.getBounds().Wa.i,
 			west: map.getBounds().Sa.i,
 		});
 	};
 	useEffect(() => {
 		if (bounds.north) fetchImagesInBounds(bounds);
-	}, [bounds, fetchImagesInBounds]);
+	}, [bounds]);
 
 	const { clusters, supercluster } = useSupercluster({
 		points: props.data.mapImages.map((img) => ({
@@ -87,8 +88,10 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 					});
 				}}
 				onClick={(coord) => {
-					const { lat, lng } = coord;
-					handleOpenSidePanel(lat, lng);
+					if (props.data.followingLocations.length === 0) {
+						const { lat, lng } = coord;
+						handleOpenSidePanel(lat, lng);
+					}
 				}}
 			>
 				{clusters.map((cluster, i) => {
@@ -120,20 +123,43 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 						/>
 					);
 				})}
-				{props.data.location && props.showCircle && (
-					<SearchArea
-						lat={props.data.location.lat}
-						lng={props.data.location.lng}
-						pixels={meters2ScreenPixels(
-							1000,
-							{
-								lat: props.data.location.lat,
-								lng: props.data.location.lng,
-							},
-							currentZoom
-						)}
-					/>
-				)}
+				{props.data.followingLocations.length === 0 &&
+					props.data.location &&
+					props.showCircle && (
+						<SearchArea
+							lat={props.data.location.lat}
+							lng={props.data.location.lng}
+							pixels={meters2ScreenPixels(
+								1000,
+								{
+									lat: props.data.location.lat,
+									lng: props.data.location.lng,
+								},
+								currentZoom
+							)}
+							color={'#B1DFFB'}
+						/>
+					)}
+				{props.data.followingLocations &&
+					props.data.followingLocations.map((location) => {
+						console.log('location', location);
+						return (
+							<FollowedArea
+								lat={location.latitude}
+								lng={location.longitude}
+								pixels={meters2ScreenPixels(
+									1000,
+									{
+										lat: location.latitude,
+										lng: location.longitude,
+									},
+									currentZoom
+								)}
+								color={'green'}
+								openSidePanel={handleOpenSidePanel}
+							/>
+						);
+					})}
 			</GoogleMapReact>
 		</div>
 	);
