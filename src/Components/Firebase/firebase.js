@@ -3,7 +3,6 @@ import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 import 'firebase/messaging';
-import * as serviceWorker from '../../serviceWorker';
 
 const config = {
 	apiKey: process.env.REACT_APP_API_KEY,
@@ -37,11 +36,13 @@ class Firebase {
 		// If you want your app to work offline and load faster, you can change
 		// unregister() to register() below. Note this comes with some pitfalls.
 		// Learn more about service workers: https://bit.ly/CRA-PWA
+		/*
 		navigator.serviceWorker
 			.register('/firebase-messaging-sw.js')
 			.then((registration) => {
 				this.messaging.useServiceWorker(registration);
 			});
+			*/
 	}
 	// *** Auth API ***
 
