@@ -37,11 +37,13 @@ class Firebase {
 		// If you want your app to work offline and load faster, you can change
 		// unregister() to register() below. Note this comes with some pitfalls.
 		// Learn more about service workers: https://bit.ly/CRA-PWA
-		navigator.serviceWorker
-			.register('/firebase-messaging-sw.js')
-			.then((registration) => {
-				this.messaging.useServiceWorker(registration);
-			});
+		if (navigator.serviceWorker) {
+			navigator.serviceWorker
+				.register('/firebase-messaging-sw.js')
+				.then((registration) => {
+					this.messaging.useServiceWorker(registration);
+				});
+		}
 	}
 	// *** Auth API ***
 
