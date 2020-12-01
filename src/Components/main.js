@@ -67,6 +67,23 @@ const Main = (props) => {
 	const [openImageGallery, setOpenImageGallery] = React.useState(false);
 	const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 	const [bounds, setBounds] = React.useState({});
+	const [followed, setFollowed] = React.useState(false);
+
+	React.useEffect(() => {
+		window.history.pushState(null, null, window.location.pathname);
+	}, []);
+
+	React.useEffect(() => {
+		window.onpopstate = function (event) {
+			event.preventDefault();
+			if (openModal) {
+				handleCloseModal();
+			} else if (openSidePanel) {
+				handleCloseSidePanel();
+			}
+			window.history.pushState(null, null, window.location.pathname);
+		};
+	}, [openModal, openSidePanel]);
 
 	const handleClickOpenModal = () => {
 		setOpenModal(true);
@@ -81,6 +98,7 @@ const Main = (props) => {
 	};
 
 	const handleCloseSidePanel = () => {
+		setFollowed(false);
 		setOpenSidePanel(false);
 	};
 
@@ -193,6 +211,8 @@ const Main = (props) => {
 				openImageGallery={handleOpenImageGallery}
 				setAlert={setAlert}
 				setOpenSnackbar={setOpenSnackbar}
+				followed={followed}
+				setFollowed={setFollowed}
 			/>
 			<AddImageModal
 				open={openModal}

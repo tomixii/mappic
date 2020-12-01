@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import clsx from 'clsx';
 
@@ -17,7 +17,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import PanoramaIcon from '@material-ui/icons/Panorama';
 import { isMobile } from 'react-device-detect';
 
-import { setLocation, setFollowingLocations } from '../redux/actions/dataActions';
+import {
+	setLocation,
+	setFollowingLocations,
+} from '../redux/actions/dataActions';
 import { withFirebase } from './Firebase';
 
 const drawerWidth = 400; // TODO something not fixed?
@@ -191,7 +194,10 @@ const SidePanel = (props) => {
 		try {
 			const messaging = props.firebase.messaging;
 			await messaging.requestPermission();
-			const token = await messaging.getToken();
+			const token = await messaging.getToken({
+				vapidKey:
+					'BBtRGGPWogpmWdmdnqpq8IQouLEwsG8iiu6r3LXHuDYvFhtDJwyRp06VlKMhDbGUCsGMJtuCYKlcm28Z4pk7duQ',
+			});
 			props.firebase
 				.users()
 				.doc(token)
@@ -207,6 +213,7 @@ const SidePanel = (props) => {
 					{ merge: true }
 				)
 				.then(() => {
+					props.setFollowed(true);
 					props.setAlert({
 						severity: 'success',
 						message: 'Location followed successfully!',
@@ -232,60 +239,81 @@ const SidePanel = (props) => {
 	const removeFollowedLocation = async () => {
 		try {
 			const messaging = props.firebase.messaging;
-			await messaging.requestPermission();
-			const token = await messaging.getToken();
-			let newLocations = [];
-			setLoading(true)
-			props.firebase.users().doc(token).get().then((doc) => {
-
-				if (doc.exists) {
-					newLocations = doc.data().locations.filter((x) => x.longitude !== props.data.location.lng && x.latitude !== props.data.location.lat);
-					console.log('Document data:', doc.data());
-				} else {
-					// doc.data() will be undefined in this case
-					console.log('No such document!');
-				}
-			}).then(() => {
-				props.firebase
-					.users()
-					.doc(token)
-					.set(
-						{
-							locations: newLocations,
-
-						},
-						{ merge: true }
-					)
-					.then(() => {
-						props.setFollowingLocations(newLocations);
-						setLoading(false)
-						props.setAlert({
-							severity: 'success',
-							message: 'Location followed successfully!',
-						});
-						props.setOpenSnackbar(true);
-						console.log('Document written with ID: ', token);
-					})
-					.catch((error) => {
-						props.setAlert({
-							severity: 'error',
-							message: 'Could not follow location',
-						});
-						props.setOpenSnackbar(true);
-						console.error('Error adding document: ', error);
-					});
+			const token = await messaging.getToken({
+				vapidKey:
+					'BBtRGGPWogpmWdmdnqpq8IQouLEwsG8iiu6r3LXHuDYvFhtDJwyRp06VlKMhDbGUCsGMJtuCYKlcm28Z4pk7duQ',
 			});
+			let newLocations = [];
+			setLoading(true);
+			props.firebase
+				.users()
+				.doc(token)
+				.get()
+				.then((doc) => {
+					if (doc.exists) {
+						newLocations = doc
+							.data()
+							.locations.filter(
+								(x) =>
+									x.longitude !== props.data.location.lng &&
+									x.latitude !== props.data.location.lat
+							);
+						console.log('Document data:', doc.data());
+					} else {
+						// doc.data() will be undefined in this case
+						console.log('No such document!');
+					}
+				})
+				.then(() => {
+					props.firebase
+						.users()
+						.doc(token)
+						.set(
+							{
+								locations: newLocations,
+							},
+							{ merge: true }
+						)
+						.then(() => {
+							if (!props.followed) props.setFollowingLocations(newLocations);
+							props.setFollowed(false);
+
+							setLoading(false);
+							props.setAlert({
+								severity: 'success',
+								message: 'Location unfollowed successfully!',
+							});
+							props.setOpenSnackbar(true);
+							console.log('Document written with ID: ', token);
+						})
+						.catch((error) => {
+							props.setAlert({
+								severity: 'error',
+								message: 'Could not follow location',
+							});
+							props.setOpenSnackbar(true);
+							console.error('Error adding document: ', error);
+						});
+				});
 
 			return token;
 		} catch (error) {
 			console.error(error);
 		}
-
 	};
 
 	const isFollowedLocation = () => {
-		return props.data.location && props.data.followingLocations.filter(loc => loc.latitude === props.data.location.lat && loc.longitude === props.data.location.lng).length > 0;
+		return (
+			(props.data.location &&
+				props.data.followingLocations.filter(
+					(loc) =>
+						loc.latitude === props.data.location.lat &&
+						loc.longitude === props.data.location.lng
+				).length > 0) ||
+			props.followed
+		);
 	};
+
 	return (
 		<Drawer
 			className={classes.drawer}
@@ -364,15 +392,18 @@ const SidePanel = (props) => {
 					disableElevation
 					color="primary"
 					onClick={() => {
-						if (isFollowedLocation()){
-							removeFollowedLocation()
+						if (isFollowedLocation()) {
+							removeFollowedLocation();
 						} else {
-							askForPermissioToReceiveNotifications()
+							askForPermissioToReceiveNotifications();
 						}
 					}}
 				>
-
-					{!loading ? isFollowedLocation() ? 'Unfollow location' : 'Follow location': 'loading...'}
+					{!loading
+						? isFollowedLocation()
+							? 'Unfollow location'
+							: 'Follow location'
+						: 'loading...'}
 				</Button>
 			</Box>
 			<Divider />

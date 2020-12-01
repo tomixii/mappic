@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/core/styles';
 import { withFirebase } from '../Components/Firebase';
-import {connect} from "react-redux";
+import { connect } from 'react-redux';
 import { setFollowingLocations } from '../redux/actions/dataActions';
 
 const useStyles = makeStyles((theme) => ({
@@ -46,11 +46,8 @@ const Header = (props) => {
 										.doc(token)
 										.get()
 										.then((doc) => {
-											console.log(doc.id);
-											console.log(token);
 											if (doc.exists) {
 												props.setFollowingLocations(doc.data().locations);
-												console.log('Document data:', doc.data());
 											} else {
 												// doc.data() will be undefined in this case
 												console.log('No such document!');
@@ -64,7 +61,9 @@ const Header = (props) => {
 						setShowFollowedLocation(!showFollowedLocation);
 					}}
 				>
-					{props.data.followingLocations.length > 0  ?  'Close followed locations': 'followed locations'}
+					{props.data.followingLocations.length > 0
+						? 'hide followed'
+						: 'show followed'}
 				</Button>
 			</Toolbar>
 		</AppBar>

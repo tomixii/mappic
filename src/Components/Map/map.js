@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
+const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 	const classes = useStyles();
 
 	//const [markers, setMarkers] = React.useState([]);
@@ -141,10 +141,10 @@ const MapContainer = ({ bounds, fetchImagesInBounds, ...props }) => {
 						/>
 					)}
 				{props.data.followingLocations &&
-					props.data.followingLocations.map((location) => {
-						console.log('location', location);
+					props.data.followingLocations.map((location, i) => {
 						return (
 							<FollowedArea
+								key={i}
 								lat={location.latitude}
 								lng={location.longitude}
 								pixels={meters2ScreenPixels(
@@ -174,7 +174,4 @@ const mapActionsToProps = {
 	setLocation,
 };
 
-export default connect(
-	mapStateToProps,
-	mapActionsToProps
-)(withFirebase(MapContainer));
+export default connect(mapStateToProps, mapActionsToProps)(withFirebase(Map));

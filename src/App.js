@@ -5,8 +5,14 @@ import Header from './Components/header';
 import { withFirebase } from './Components/Firebase';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import * as serviceWorker from './serviceWorker';
 
-function App() {
+const App = (props) => {
+	React.useEffect(() => {
+		navigator.serviceWorker.register('/firebase-messaging-sw.js');
+		serviceWorker.register(props.firebase);
+	}, []);
+
 	return (
 		<Provider store={store}>
 			<div className="App">
@@ -15,6 +21,6 @@ function App() {
 			</div>
 		</Provider>
 	);
-}
+};
 
 export default withFirebase(App);

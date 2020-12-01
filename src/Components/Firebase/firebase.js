@@ -3,7 +3,6 @@ import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 import 'firebase/messaging';
-import * as serviceWorker from '../../serviceWorker';
 
 const config = {
 	apiKey: process.env.REACT_APP_API_KEY,
@@ -14,13 +13,54 @@ const config = {
 	messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
 	appId: process.env.REACT_APP_APP_ID,
 };
+/*
+const win = window;
+const nav = navigator;
+const doc = document;
 
+const detectFeatures = (reg) => {
+	console.log(nav);
+	console.log(reg);
+	return {
+		'Offline Capabilities': 'caches' in win,
+		'Push Notifications': 'pushManager' in reg,
+		'Add to Home Screen':
+			doc.createElement('link').relList.supports('manifest') &&
+			'onbeforeinstallprompt' in win,
+		'Background Sync': 'sync' in reg,
+		'Navigation Preload': 'navigationPreload' in reg,
+		'Silent Push': 'budget' in nav && 'reserve' in nav.budget,
+		'Storage Estimation': 'storage' in nav && 'estimate' in nav.storage,
+		'Persistent Storage': 'storage' in nav && 'persist' in nav.storage,
+		'Web Share': 'share' in nav,
+		'Media Session': 'mediaSession' in nav,
+		'Media Capabilities': 'mediaCapabilities' in nav,
+		'Device Memory': 'deviceMemory' in nav,
+		'Getting Installed Related Apps': 'getInstalledRelatedApps' in nav,
+		'Payment Request': 'PaymentRequest' in win,
+		'Credential Management': 'credentials' in nav,
+	};
+};
+*/
 class Firebase {
 	constructor() {
 		app.initializeApp(config);
 
 		this.auth = app.auth();
 		this.db = app.firestore();
+
+		this.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+			console.log(err);
+			if (err.code == 'failed-precondition') {
+				// Multiple tabs open, persistence can only be enabled
+				// in one tab at a a time.
+				// ...
+			} else if (err.code == 'unimplemented') {
+				// The current browser does not support all of the
+				// features required to enable persistence
+				// ...
+			}
+		});
 		this.storage = app.storage();
 		this.firestore = app.firestore;
 		if (app.messaging.isSupported()) {
@@ -34,15 +74,8 @@ class Firebase {
 		} else {
 			console.log('messaging is not supported');
 		}
-		// If you want your app to work offline and load faster, you can change
-		// unregister() to register() below. Note this comes with some pitfalls.
-		// Learn more about service workers: https://bit.ly/CRA-PWA
-		navigator.serviceWorker
-			.register('/firebase-messaging-sw.js')
-			.then((registration) => {
-				this.messaging.useServiceWorker(registration);
-			});
 	}
+
 	// *** Auth API ***
 
 	doCreateUserWithEmailAndPassword = (email, password) =>
