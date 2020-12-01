@@ -10,7 +10,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import AddImageModal from './addImageModal';
 import ImageGallery from './ImageGallery';
-import Map from './Map/map';
+import Map from './MapLeaflet/map';
 import SidePanel from './locationView';
 import { withFirebase } from './Firebase';
 import {
@@ -35,10 +35,11 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		justifyContent: 'center',
+		height: '100%',
 	},
 	content: {
 		display: 'flex',
-		width: '100%',
+		height: '100%',
 		marginLeft: 0,
 	},
 	buttonContainer: {
