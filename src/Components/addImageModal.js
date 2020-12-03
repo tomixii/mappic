@@ -268,7 +268,7 @@ const AddImageModal = (props) => {
 					color="primary"
 					className={classes.footerButton}
 					onClick={() => {
-						//props.handlePictures(files);
+						props.handlePictures(files);
 						sendNotifications();
 						setFiles([]);
 						/* TODO: Tell to users that "pictures(s) added successfully" */

@@ -7,6 +7,7 @@ import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import Snackbar from '@material-ui/core/Snackbar';
 import { makeStyles } from '@material-ui/core/styles';
+import imageCompression from 'browser-image-compression';
 
 import AddImageModal from './addImageModal';
 import ImageGallery from './ImageGallery';
@@ -127,17 +128,26 @@ const Main = (props) => {
 	};
 
 	const handlePictures = (files) => {
-		files.forEach((file) => {
+		files.forEach(async (file) => {
 			const imageExtension = file.path.split('.')[
 				file.path.split('.').length - 1
 			];
 			//234124124.png
-			const imageFileName = `${Math.round(
-				Math.random() * 100000000
-			)}.${imageExtension}`;
+			const imageFileNumber = Math.round(Math.random() * 100000000);
+			const imageFileName = `${imageFileNumber}.${imageExtension}`;
+			//const imageThumbnailName = `${imageFileNumber}_thumbnail.${imageExtension}`;
+			let compressedFile = file;
+			//let thumbnail = file;
+			if (file.size > 800000) { // If filesize is over 0.8 MB
+				compressedFile = await imageCompression(file,{
+					maxSizeMB: 0.8,
+					maxWidthOrHeight: 1080,
+					useWebWorker: true
+				});
+			}
 			props.firebase.storage
 				.ref(`images/${imageFileName}`)
-				.put(file)
+				.put(compressedFile)
 				.then(() => {
 					props.firebase
 						.pictures()

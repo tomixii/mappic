@@ -10,6 +10,7 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "axios": "^0.20.0",
+    "browser-image-compression": "^1.0.13",
     "clsx": "^1.1.1",
     "firebase": "^7.24.0",
     "leaflet": "^1.7.1",
