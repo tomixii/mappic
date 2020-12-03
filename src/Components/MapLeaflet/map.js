@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withFirebase } from '../Firebase';
 
+import L from 'leaflet';
 import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
@@ -11,35 +12,47 @@ import FollowedAreaLeaflet from './FollowedAreaLeaflet';
 import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
 import { getDistanceFromLatLonInKm } from '../../utils';
 
-const MapEvents = (props) => {
-	React.useEffect(() => {
-		props.setZoom(map.getZoom());
-		props.setBounds({
-			north: map.getBounds()._northEast.lat, // event.bounds.ne.lat,
-			east: map.getBounds()._northEast.lng, //event.bounds.ne.lng,
-			south: map.getBounds()._southWest.lat, //event.bounds.sw.lat,
-			west: map.getBounds()._southWest.lng, // event.bounds.sw.lng,
-		});
-	}, []);
-
+const MapEvents = ({ data, handleOpenSidePanel, setZoom, setBounds }) => {
 	const map = useMapEvents({
 		click: (event) => {
-			if (props.data.followingLocations.length === 0) {
+			if (data.followingLocations.length === 0) {
 				const { lat, lng } = event.latlng;
-				props.handleOpenSidePanel(lat, lng);
+				handleOpenSidePanel(lat, lng);
 			}
 		},
 		moveend: (event) => {
-			props.setZoom(map.getZoom());
-			props.setBounds({
+			setZoom(map.getZoom());
+			setBounds({
 				north: map.getBounds()._northEast.lat,
 				east: map.getBounds()._northEast.lng,
 				south: map.getBounds()._southWest.lat,
 				west: map.getBounds()._southWest.lng,
 			});
 		},
+		load: () => {
+			// This should work but it doesn't. React.useEffect is used instead
+			console.log('map load');
+		},
 	});
+	React.useEffect(() => {
+		setZoom(map.getZoom());
+		setBounds({
+			north: map.getBounds()._northEast.lat,
+			east: map.getBounds()._northEast.lng,
+			south: map.getBounds()._southWest.lat,
+			west: map.getBounds()._southWest.lng,
+		});
+	}, [setZoom, setBounds]);
+
 	return null;
+};
+
+const createClusterCustomIcon = function (cluster) {
+	return L.divIcon({
+		html: `<span>${cluster.getChildCount()}</span>`,
+		className: 'marker-cluster-custom',
+		iconSize: L.point(40, 40, true),
+	});
 };
 
 const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
@@ -47,7 +60,7 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 
 	React.useEffect(() => {
 		if (bounds.north) fetchImagesInBounds(bounds);
-	}, [bounds]);
+	}, [bounds, fetchImagesInBounds]);
 
 	const handleOpenSidePanel = (lat, lng) => {
 		props.setLocation({ lat, lng });
@@ -65,17 +78,28 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 	};
 
 	return (
-		<MapContainer center={[60.18, 24.82]} zoom={currentZoom}>
+		<MapContainer
+			center={[60.18, 24.82]}
+			zoom={currentZoom}
+			zoomControl={false}
+		>
 			<TileLayer
 				attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 				url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 			/>
+			{/*
+			<OfflineTileLayer />
+  */}
+
 			<MapEvents
 				handleOpenSidePanel={handleOpenSidePanel}
 				setZoom={setCurrentZoom}
 				{...props}
 			/>
-			<MarkerClusterGroup>
+			<MarkerClusterGroup
+				showCoverageOnHover={false}
+				iconCreateFunction={createClusterCustomIcon}
+			>
 				{props.data.mapImages.map((img, i) => {
 					return <MarkerLeaflet key={i} location={[img.lat, img.lng]} />;
 				})}

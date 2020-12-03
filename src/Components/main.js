@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
 		flexDirection: 'column',
 		justifyContent: 'center',
 		height: '100%',
+		overflow: 'hidden',
 	},
 	content: {
 		display: 'flex',
@@ -47,6 +48,7 @@ const useStyles = makeStyles((theme) => ({
 		left: '50%',
 		transform: 'translateX(-50%)',
 		bottom: theme.spacing(4),
+		zIndex: 99999,
 	},
 	buttonContainerShift: {
 		// TODO can button be centered?
@@ -69,9 +71,13 @@ const Main = (props) => {
 	const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 	const [bounds, setBounds] = React.useState({});
 	const [followed, setFollowed] = React.useState(false);
+	const [isOnline, setIsOnline] = React.useState(window.navigator.onLine);
 
 	React.useEffect(() => {
 		window.history.pushState(null, null, window.location.pathname);
+
+		window.addEventListener('online', () => setIsOnline(true));
+		window.addEventListener('offline', () => setIsOnline(false));
 	}, []);
 
 	React.useEffect(() => {
@@ -203,7 +209,13 @@ const Main = (props) => {
 	};
 
 	return (
-		<Container className={classes.container}>
+		<Container
+			className={
+				isOnline
+					? classes.container
+					: clsx(classes.container, 'container-offline')
+			}
+		>
 			<SidePanel
 				drawerWidth={drawerWidth}
 				open={openSidePanel}
@@ -214,6 +226,7 @@ const Main = (props) => {
 				setOpenSnackbar={setOpenSnackbar}
 				followed={followed}
 				setFollowed={setFollowed}
+				online={isOnline}
 			/>
 			<AddImageModal
 				open={openModal}
@@ -233,29 +246,31 @@ const Main = (props) => {
 					openSidePanel={() => handleClickOpenSidePanel()}
 					showCircle={openSidePanel}
 				/>
-				<Box
-					className={clsx(classes.buttonContainer, {
-						[classes.buttonContainerShift]: openSidePanel,
-					})}
-				>
-					<Fab
-						size="medium"
-						variant="extended"
-						color="primary"
-						onClick={() => {
-							navigator.geolocation.getCurrentPosition((position) => {
-								props.setLocation({
-									lng: position.coords.longitude,
-									lat: position.coords.latitude,
-								});
-							});
-							handleClickOpenModal();
-						}}
-						className={classes.fab}
+				{isOnline && (
+					<Box
+						className={clsx(classes.buttonContainer, {
+							[classes.buttonContainerShift]: openSidePanel,
+						})}
 					>
-						Add image here
-					</Fab>
-				</Box>
+						<Fab
+							size="medium"
+							variant="extended"
+							color="primary"
+							onClick={() => {
+								navigator.geolocation.getCurrentPosition((position) => {
+									props.setLocation({
+										lng: position.coords.longitude,
+										lat: position.coords.latitude,
+									});
+								});
+								handleClickOpenModal();
+							}}
+							className={classes.fab}
+						>
+							Add image here
+						</Fab>
+					</Box>
+				)}
 			</main>
 			<Snackbar
 				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

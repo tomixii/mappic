@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import clsx from 'clsx';
 
@@ -324,126 +324,152 @@ const SidePanel = (props) => {
 				paper: classes.drawerPaper,
 			}}
 		>
-			<Box className={classes.drawerHeader}>
-				{props.data.areaImages.length > 0 ? (
-					<div
-						className={classes.headerImageContainer}
-						onClick={() => {
-							props.openImageGallery(0);
-						}}
+			{props.online ? (
+				<>
+					<Box className={classes.drawerHeader}>
+						{props.data.areaImages.length > 0 ? (
+							<div
+								className={classes.headerImageContainer}
+								onClick={() => {
+									props.openImageGallery(0);
+								}}
+							>
+								<img
+									className={classes.image}
+									src={props.data.areaImages[0].imageUrl}
+									alt="thumbnail"
+								/>
+							</div>
+						) : (
+							<PanoramaIcon className={classes.placeholderImage} />
+						)}
+						{isMobile ? (
+							<IconButton
+								className={classes.backButton}
+								onClick={props.handleClose}
+							>
+								<ArrowBackIcon />
+							</IconButton>
+						) : (
+							<IconButton
+								className={classes.closeButton}
+								onClick={props.handleClose}
+							>
+								<CloseIcon />
+							</IconButton>
+						)}
+					</Box>
+					<Divider />
+					<Box className={classes.drawerSection}>
+						<Typography className={classes.sectionTitle}>
+							{`There are ${props.data.areaImages.length} image(s) nearby.`}
+						</Typography>
+						<Typography>
+							{props.data.location &&
+								`${
+									Math.round((props.data.location.lng + Number.EPSILON) * 100) /
+									100
+								}, ${
+									Math.round((props.data.location.lat + Number.EPSILON) * 100) /
+									100
+								}`}
+						</Typography>
+					</Box>
+					<Divider />
+					<Box
+						className={clsx(
+							classes.drawerSection,
+							classes.horizontalDrawerSection
+						)}
 					>
-						<img
-							className={classes.image}
-							src={props.data.areaImages[0].imageUrl}
-							alt="thumbnail"
-						/>
-					</div>
-				) : (
-					<PanoramaIcon className={classes.placeholderImage} />
-				)}
-				{isMobile ? (
-					<IconButton
-						className={classes.backButton}
-						onClick={props.handleClose}
-					>
-						<ArrowBackIcon />
-					</IconButton>
-				) : (
+						<Button
+							className={classes.drawerButton}
+							size={screenExtraSmall ? 'small' : 'medium'}
+							variant="contained"
+							disableElevation
+							color="primary"
+							onClick={props.openAddImageModal}
+						>
+							Add image
+						</Button>
+						<Button
+							className={classes.drawerButton}
+							size={screenExtraSmall ? 'small' : 'medium'}
+							variant="contained"
+							disableElevation
+							color="primary"
+							onClick={() => {
+								if (isFollowedLocation()) {
+									removeFollowedLocation();
+								} else {
+									askForPermissioToReceiveNotifications();
+								}
+							}}
+						>
+							{!loading
+								? isFollowedLocation()
+									? 'Unfollow location'
+									: 'Follow location'
+								: 'loading...'}
+						</Button>
+					</Box>
+					<Divider />
+					<Box className={classes.drawerSection}>
+						<Typography className={classes.sectionTitle}>Images</Typography>
+						{props.data.areaImages.length > 0 && (
+							<>
+								<Box className={classes.gridContainer}>
+									<GridList
+										cellHeight={screenExtraSmall ? 100 : 120}
+										className={classes.gridList}
+										cols={columns()}
+									>
+										{previewImages.map((image, i) => (
+											<GridListTile
+												className={classes.gridListTile}
+												key={i}
+												onClick={() => props.openImageGallery(i)}
+											>
+												<img src={image.imageUrl} alt="thumbnail" />
+											</GridListTile>
+										))}
+									</GridList>
+								</Box>
+								<Button
+									className={classes.viewMoreButton}
+									color="primary"
+									size={screenExtraSmall ? 'small' : 'medium'}
+									onClick={() => {
+										props.openImageGallery(0);
+									}}
+								>
+									View images
+								</Button>
+							</>
+						)}
+						{props.data.areaImages.length === 0 && (
+							<Typography>No images</Typography>
+						)}
+					</Box>
+				</>
+			) : (
+				<div
+					style={{
+						display: 'flex',
+						height: '100%',
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
 					<IconButton
 						className={classes.closeButton}
 						onClick={props.handleClose}
 					>
 						<CloseIcon />
 					</IconButton>
-				)}
-			</Box>
-			<Divider />
-			<Box className={classes.drawerSection}>
-				<Typography className={classes.sectionTitle}>
-					{`There are ${props.data.areaImages.length} image(s) nearby.`}
-				</Typography>
-				<Typography>
-					{props.data.location &&
-						`${
-							Math.round((props.data.location.lng + Number.EPSILON) * 100) / 100
-						}, ${
-							Math.round((props.data.location.lat + Number.EPSILON) * 100) / 100
-						}`}
-				</Typography>
-			</Box>
-			<Divider />
-			<Box
-				className={clsx(classes.drawerSection, classes.horizontalDrawerSection)}
-			>
-				<Button
-					className={classes.drawerButton}
-					size={screenExtraSmall ? 'small' : 'medium'}
-					variant="contained"
-					disableElevation
-					color="primary"
-					onClick={props.openAddImageModal}
-				>
-					Add image
-				</Button>
-				<Button
-					className={classes.drawerButton}
-					size={screenExtraSmall ? 'small' : 'medium'}
-					variant="contained"
-					disableElevation
-					color="primary"
-					onClick={() => {
-						if (isFollowedLocation()) {
-							removeFollowedLocation();
-						} else {
-							askForPermissioToReceiveNotifications();
-						}
-					}}
-				>
-					{!loading
-						? isFollowedLocation()
-							? 'Unfollow location'
-							: 'Follow location'
-						: 'loading...'}
-				</Button>
-			</Box>
-			<Divider />
-			<Box className={classes.drawerSection}>
-				<Typography className={classes.sectionTitle}>Images</Typography>
-				{props.data.areaImages.length > 0 && (
-					<>
-						<Box className={classes.gridContainer}>
-							<GridList
-								cellHeight={screenExtraSmall ? 100 : 120}
-								className={classes.gridList}
-								cols={columns()}
-							>
-								{previewImages.map((image, i) => (
-									<GridListTile
-										className={classes.gridListTile}
-										key={i}
-										onClick={() => props.openImageGallery(i)}
-									>
-										<img src={image.imageUrl} alt="thumbnail" />
-									</GridListTile>
-								))}
-							</GridList>
-						</Box>
-						<Button
-							className={classes.viewMoreButton}
-							color="primary"
-							size={screenExtraSmall ? 'small' : 'medium'}
-							onClick={() => {
-								props.openImageGallery(0);
-							}}
-						>
-							View images
-						</Button>
-					</>
-				)}
-				{props.data.areaImages.length === 0 && (
-					<Typography>No images</Typography>
-				)}
-			</Box>
+					<p>No internet connection</p>
+				</div>
+			)}
 		</Drawer>
 	);
 };

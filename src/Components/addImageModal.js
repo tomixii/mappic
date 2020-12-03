@@ -160,7 +160,6 @@ const AddImageModal = (props) => {
 	}, [files]);
 
 	const sendNotifications = () => {
-		const users = [];
 		props.firebase
 			.users()
 			.get()

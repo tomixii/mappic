@@ -13,35 +13,7 @@ const config = {
 	messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
 	appId: process.env.REACT_APP_APP_ID,
 };
-/*
-const win = window;
-const nav = navigator;
-const doc = document;
 
-const detectFeatures = (reg) => {
-	console.log(nav);
-	console.log(reg);
-	return {
-		'Offline Capabilities': 'caches' in win,
-		'Push Notifications': 'pushManager' in reg,
-		'Add to Home Screen':
-			doc.createElement('link').relList.supports('manifest') &&
-			'onbeforeinstallprompt' in win,
-		'Background Sync': 'sync' in reg,
-		'Navigation Preload': 'navigationPreload' in reg,
-		'Silent Push': 'budget' in nav && 'reserve' in nav.budget,
-		'Storage Estimation': 'storage' in nav && 'estimate' in nav.storage,
-		'Persistent Storage': 'storage' in nav && 'persist' in nav.storage,
-		'Web Share': 'share' in nav,
-		'Media Session': 'mediaSession' in nav,
-		'Media Capabilities': 'mediaCapabilities' in nav,
-		'Device Memory': 'deviceMemory' in nav,
-		'Getting Installed Related Apps': 'getInstalledRelatedApps' in nav,
-		'Payment Request': 'PaymentRequest' in win,
-		'Credential Management': 'credentials' in nav,
-	};
-};
-*/
 class Firebase {
 	constructor() {
 		app.initializeApp(config);
@@ -51,11 +23,11 @@ class Firebase {
 
 		this.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
 			console.log(err);
-			if (err.code == 'failed-precondition') {
+			if (err.code === 'failed-precondition') {
 				// Multiple tabs open, persistence can only be enabled
 				// in one tab at a a time.
 				// ...
-			} else if (err.code == 'unimplemented') {
+			} else if (err.code === 'unimplemented') {
 				// The current browser does not support all of the
 				// features required to enable persistence
 				// ...

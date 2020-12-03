@@ -111,17 +111,3 @@ export function unregister() {
 		});
 	}
 }
-/*
-self.addEventListener('fetch', (event) => {
-	if (event.request.url.indexOf('https://maps.googleapis.com/maps/vt') == 0) {
-		// Handle Maps API requests in a generic fashion,
-		// by returning a Promise that resolves to a Response.
-		console.log('fetch maps if');
-		event.respondWith();
-	} else {
-		console.log('fetch maps else');
-		// Some default handling.
-		event.respondWith();
-	}
-});
-*/
