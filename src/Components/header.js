@@ -7,6 +7,14 @@ import { makeStyles } from '@material-ui/core/styles';
 import { withFirebase } from '../Components/Firebase';
 import { connect } from 'react-redux';
 import { setFollowingLocations } from '../redux/actions/dataActions';
+import {
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Slide,
+} from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
 	appBar: {
@@ -18,19 +26,28 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
+const Transition = React.forwardRef(function Transition(props, ref) {
+	return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const Header = (props) => {
 	const classes = useStyles();
 	const [showFollowedLocation, setShowFollowedLocation] = React.useState(false);
+	const [dialogOpen, setDialogOpen] = React.useState(false);
 
+	const handleOpenDialog = () => {
+		setDialogOpen(true);
+	};
+
+	const handleCloseDialog = () => {
+		setDialogOpen(false);
+	};
 	return (
 		<AppBar className={classes.appBar} position="static">
 			<Toolbar>
 				<Typography variant="h6" className={classes.title}>
 					Mappic
 				</Typography>
-				{/* TODO uncomment if authentication is implemented
-                <Button color='inherit'>Login</Button>
-            */}
 				<Button
 					color="inherit"
 					onClick={() => {
@@ -47,10 +64,15 @@ const Header = (props) => {
 										.get()
 										.then((doc) => {
 											if (doc.exists) {
-												props.setFollowingLocations(doc.data().locations);
+												if (doc.data().locations.length > 0) {
+													props.setFollowingLocations(doc.data().locations);
+												} else {
+													handleOpenDialog();
+												}
 											} else {
 												// doc.data() will be undefined in this case
 												console.log('No such document!');
+												handleOpenDialog();
 											}
 										});
 								})
@@ -66,6 +88,29 @@ const Header = (props) => {
 						: 'show followed'}
 				</Button>
 			</Toolbar>
+			<Dialog
+				open={dialogOpen}
+				TransitionComponent={Transition}
+				keepMounted
+				onClose={handleCloseDialog}
+				aria-labelledby="alert-dialog-slide-title"
+				aria-describedby="alert-dialog-slide-description"
+			>
+				<DialogTitle id="alert-dialog-slide-title">
+					You don't follow any locations yet.
+				</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="alert-dialog-slide-description">
+						Select a location from the map and follow it to get notifications of
+						new images!
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleCloseDialog} color="primary">
+						OK
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</AppBar>
 	);
 };

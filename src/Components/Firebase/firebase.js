@@ -33,10 +33,15 @@ class Firebase {
 				// ...
 			}
 		});
+
 		this.storage = app.storage();
 		this.firestore = app.firestore;
 		if (app.messaging.isSupported()) {
 			this.messaging = app.messaging();
+			this.messaging.getToken({
+				vapidKey:
+					'BBtRGGPWogpmWdmdnqpq8IQouLEwsG8iiu6r3LXHuDYvFhtDJwyRp06VlKMhDbGUCsGMJtuCYKlcm28Z4pk7duQ',
+			});
 			this.messaging.onMessage((payload) => {
 				console.log('Message received. ', payload);
 				// [START_EXCLUDE]

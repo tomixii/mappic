@@ -179,7 +179,7 @@ const AddImageModal = (props) => {
 								title: 'Checkout new image!',
 								body: `Image added near your followed location: ${loc.latitude},${loc.longitude}`,
 								icon: 'logo192.png',
-								click_action: 'http://localhost:5000',
+								click_action: 'https://mappic.web.app',
 							};
 							fetch('https://fcm.googleapis.com/fcm/send', {
 								method: 'POST',

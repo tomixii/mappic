@@ -45,13 +45,15 @@ function registerValidSW(swUrl, firebase) {
 	navigator.serviceWorker
 		.register(swUrl)
 		.then((registration) => {
+			/*
 			firebase.messaging.getToken({
 				vapidKey:
 					'BBtRGGPWogpmWdmdnqpq8IQouLEwsG8iiu6r3LXHuDYvFhtDJwyRp06VlKMhDbGUCsGMJtuCYKlcm28Z4pk7duQ',
 				serviceWorkerRegistration: registration,
-			});
+			});*/
 			registration.onupdatefound = () => {
 				const installingWorker = registration.installing;
+
 				installingWorker.onstatechange = () => {
 					if (installingWorker.state === 'installed') {
 						if (navigator.serviceWorker.controller) {
@@ -60,6 +62,8 @@ function registerValidSW(swUrl, firebase) {
 							// It's the perfect time to display a "New content is
 							// available; please refresh." message in your web app.
 							console.log('New content is available; please refresh.');
+							installingWorker.postMessage({ type: 'SKIP_WAITING' });
+							//window.location.reload();
 						} else {
 							// At this point, everything has been precached.
 							// It's the perfect time to display a
@@ -88,8 +92,7 @@ function checkValidServiceWorker(swUrl, firebase) {
 
 				navigator.serviceWorker.ready.then((registration) => {
 					registration.unregister().then(() => {
-						console.log('reload');
-						//window.location.reload();
+						window.location.reload();
 					});
 				});
 			} else {

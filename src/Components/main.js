@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
 		left: '50%',
 		transform: 'translateX(-50%)',
 		bottom: theme.spacing(4),
-		zIndex: 99999,
+		zIndex: 1000,
 	},
 	buttonContainerShift: {
 		// TODO can button be centered?
@@ -138,11 +138,12 @@ const Main = (props) => {
 			//const imageThumbnailName = `${imageFileNumber}_thumbnail.${imageExtension}`;
 			let compressedFile = file;
 			//let thumbnail = file;
-			if (file.size > 800000) { // If filesize is over 0.8 MB
-				compressedFile = await imageCompression(file,{
+			if (file.size > 800000) {
+				// If filesize is over 0.8 MB
+				compressedFile = await imageCompression(file, {
 					maxSizeMB: 0.8,
 					maxWidthOrHeight: 1080,
-					useWebWorker: true
+					useWebWorker: true,
 				});
 			}
 			props.firebase.storage
@@ -211,10 +212,8 @@ const Main = (props) => {
 				});
 			})
 			.then(() => {
-				//console.log(images);
 				props.setMapImages(images);
 				return images;
-				//console.log(`Saved ${images.length} image(s) to redux`);
 			});
 	};
 
@@ -256,7 +255,7 @@ const Main = (props) => {
 					openSidePanel={() => handleClickOpenSidePanel()}
 					showCircle={openSidePanel}
 				/>
-				{isOnline && (
+				{isOnline && true && (
 					<Box
 						className={clsx(classes.buttonContainer, {
 							[classes.buttonContainerShift]: openSidePanel,

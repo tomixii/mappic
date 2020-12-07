@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import Main from './Components/main';
 import Header from './Components/header';
@@ -12,8 +12,6 @@ const nav = navigator;
 const doc = document;
 
 const detectFeatures = (reg) => {
-	console.log(nav);
-	console.log(reg);
 	return {
 		'Offline Capabilities': 'caches' in win,
 		'Push Notifications': 'pushManager' in reg,
@@ -36,12 +34,20 @@ const detectFeatures = (reg) => {
 };
 
 const App = (props) => {
-	React.useEffect(() => {
-		if (serviceWorker in navigator) {
-			navigator.serviceWorker
-				.register('/firebase-messaging-sw.js')
-				.then((reg) => console.log(detectFeatures(reg)));
-			serviceWorker.register(props.firebase);
+	useEffect(() => {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('combined-sw.js');
+			/*
+				.then((reg) => {
+					console.log(detectFeatures(reg));
+					props.firebase.messaging.getToken({
+						vapidKey:
+						'BBtRGGPWogpmWdmdnqpq8IQouLEwsG8iiu6r3LXHuDYvFhtDJwyRp06VlKMhDbGUCsGMJtuCYKlcm28Z4pk7duQ',
+						serviceWorkerRegistration: reg,
+					});
+				});
+				*/
+			//serviceWorker.register().then();
 		}
 	}, [props.firebase]);
 

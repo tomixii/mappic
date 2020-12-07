@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import GoogleMapReact, { meters2ScreenPixels } from 'google-map-react';
 import { makeStyles } from '@material-ui/core/styles';
 import useSupercluster from 'use-supercluster';
-import { isMobile } from "react-device-detect";
+import { isMobile } from 'react-device-detect';
 
 import { withFirebase } from '../Firebase';
 import { setAreaImages, setLocation } from '../../redux/actions/dataActions';
@@ -80,7 +80,7 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 				yesIWantToUseGoogleMapApiInternals
 				options={{
 					fullscreenControl: false,
-					zoomControl: !isMobile // Disable zoom buttons on mobile
+					zoomControl: !isMobile, // Disable zoom buttons on mobile
 				}}
 				onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 				onChange={(event) => {

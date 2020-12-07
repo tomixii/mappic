@@ -60,7 +60,7 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 
 	React.useEffect(() => {
 		if (bounds.north) fetchImagesInBounds(bounds);
-	}, [bounds, fetchImagesInBounds]);
+	}, [bounds]);
 
 	const handleOpenSidePanel = (lat, lng) => {
 		props.setLocation({ lat, lng });
@@ -87,10 +87,6 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 				attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 				url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 			/>
-			{/*
-			<OfflineTileLayer />
-  */}
-
 			<MapEvents
 				handleOpenSidePanel={handleOpenSidePanel}
 				setZoom={setCurrentZoom}
@@ -99,9 +95,17 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 			<MarkerClusterGroup
 				showCoverageOnHover={false}
 				iconCreateFunction={createClusterCustomIcon}
+				spiderfyOnMaxZoom={false}
+				zoomToBoundsOnClick={false}
 			>
 				{props.data.mapImages.map((img, i) => {
-					return <MarkerLeaflet key={i} location={[img.lat, img.lng]} />;
+					return (
+						<MarkerLeaflet
+							key={i}
+							location={[img.lat, img.lng]}
+							openSidePanel={handleOpenSidePanel}
+						/>
+					);
 				})}
 			</MarkerClusterGroup>
 
@@ -111,6 +115,7 @@ const Map = ({ bounds, fetchImagesInBounds, ...props }) => {
 					<SearchAreaLeaflet
 						location={[props.data.location.lat, props.data.location.lng]}
 						color={'#B1DFFB'}
+						openSidePanel={handleOpenSidePanel}
 					/>
 				)}
 			{props.data.followingLocations &&
